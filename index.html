@@ -117,9 +117,11 @@ button{cursor:pointer}
 
 /* bottom nav */
 .nav{position:fixed;left:0;right:0;bottom:0;z-index:6;background:var(--card);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
-.nav-in{max-width:520px;margin:0 auto;display:grid;grid-template-columns:auto 1fr 1fr 1fr;gap:4px;align-items:center;padding:6px 16px 8px}
+.nav-in{max-width:520px;margin:0 auto;display:grid;grid-template-columns:repeat(5,1fr);gap:2px;align-items:end;padding:6px 8px 8px}
 .nav-btn{border:0;background:none;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:12px;color:var(--muted);padding:4px}
 .nav-btn[aria-current="page"]{color:var(--ink);font-weight:700}
+.nav-post{color:var(--ink);font-weight:700}
+.nav-post-ico{width:48px;height:40px;border-radius:12px;background:var(--hazard);display:grid;place-items:center;box-shadow:0 2px 0 var(--ink);margin-top:-14px;margin-bottom:2px}
 .post-btn{border:0;background:var(--hazard);color:var(--ink);font-weight:900;font-size:16px;border-radius:12px;padding:12px 20px;display:flex;align-items:center;gap:6px;box-shadow:0 2px 0 var(--ink)}
 
 /* sheets */
@@ -262,6 +264,13 @@ textarea.inp{min-height:84px;resize:vertical}
 .acct{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .acct .email{font-weight:700;word-break:break-all;margin-right:auto}
 
+.about-lead{margin:0;font-size:16px;line-height:1.7;max-width:65ch}
+.about-steps{margin:0;padding-left:22px;display:grid;gap:10px;font-size:15px;line-height:1.6}
+.about-steps b{display:block}
+.about-list{margin:0;padding-left:20px;display:grid;gap:6px;font-size:15px;line-height:1.6}
+.about-warn{border-color:#F2B79A;background:#FFF4EE}
+.about-meta{font-size:13px;color:var(--muted);text-align:center;margin:4px 0 8px}
+
 .skel{height:118px;border-radius:12px;background:linear-gradient(90deg,#E4E2DA,#ECEAE3,#E4E2DA);background-size:200% 100%;animation:sh 1.2s infinite}
 @keyframes sh{to{background-position:-200% 0}}
 @media (prefers-reduced-motion:reduce){.skel{animation:none}}
@@ -280,7 +289,7 @@ textarea.inp{min-height:84px;resize:vertical}
   .tn .badge{position:static}
   .topnav .post-btn{margin-left:6px;padding:9px 18px;font-size:15px;background:var(--ink);color:#fff;box-shadow:none}
   .loc-pill{margin-left:0;max-width:220px}
-  #browseView,#meView,#chatsView{max-width:1280px;margin:0 auto;padding:0 8px}
+  #browseView,#meView,#chatsView,#aboutView{max-width:1280px;margin:0 auto;padding:0 8px}
   .chips{flex-wrap:wrap;overflow:visible}
   #list,#meList{grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px}
   #list .card,#meList .card{grid-template-columns:1fr;padding:0;gap:0;overflow:hidden;align-content:start;transition:box-shadow .15s}
@@ -323,6 +332,7 @@ textarea.inp{min-height:84px;resize:vertical}
       <nav class="topnav" aria-label="主選單">
         <button class="tn" type="button" data-tview="browse">找料</button>
         <button class="tn" type="button" data-tview="chats">訊息<span class="badge" id="chatBadge2" hidden></span></button>
+        <button class="tn" type="button" data-tview="about">關於</button>
         <button class="tn" type="button" data-tview="me">我的</button>
         <button class="post-btn" type="button" id="tnPost">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
@@ -368,14 +378,11 @@ textarea.inp{min-height:84px;resize:vertical}
 
   <main id="meView" hidden></main>
   <main id="chatsView" hidden></main>
+  <main id="aboutView" hidden></main>
 </div>
 
 <nav class="nav" aria-label="主選單">
   <div class="nav-in">
-    <button class="post-btn" id="navPost" type="button">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
-      刊登
-    </button>
     <button class="nav-btn" id="navBrowse" aria-current="page" type="button">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 10l9-7 9 7v10a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>
       找料
@@ -383,6 +390,14 @@ textarea.inp{min-height:84px;resize:vertical}
     <button class="nav-btn" id="navChats" type="button">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"/></svg>
       訊息<span class="badge" id="chatBadge" hidden></span>
+    </button>
+    <button class="nav-btn nav-post" id="navPost" type="button">
+      <span class="nav-post-ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></span>
+      刊登
+    </button>
+    <button class="nav-btn" id="navAbout" type="button">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6"/><circle cx="12" cy="7.6" r="1.1" fill="currentColor" stroke="none"/></svg>
+      關於
     </button>
     <button class="nav-btn" id="navMe" type="button">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>
@@ -654,15 +669,41 @@ function renderMe(full){
    '<div class="panelcard"><div class="sec-h">帳號</div>'+(S.authUser?'<div class="acct"><span class="email">'+esc(S.authUser.email||"已登入")+'</span><button type="button" class="btn sm" id="meLogout">登出</button></div>'+(S.isOwner?'<span style="font-size:13.5px;color:var(--muted)">你是管理員，可以修改或刪除任何刊登。</span>':''):'<span style="font-size:14px;color:var(--muted)">還沒登入。登入後就能刊登、傳訊息，換手機也找得回你的刊登。</span><button type="button" class="btn primary" data-login>登入或註冊</button>')+'</div>'+
    '</div>';
 }
+function renderAbout(){
+  const v=$("#aboutView");if(v.childElementCount)return;
+  v.innerHTML='<div class="me">'+
+   '<h2>關於接好料</h2>'+
+   '<p class="about-lead">接好料 ReMat 讓工地多出來的材料，直接交給附近需要的人。少丟一車廢料、少付一筆清運費，也幫別人省下買新料的錢。</p>'+
+   '<div class="panelcard"><div class="sec-h">怎麼用</div><ol class="about-steps">'+
+    '<li><b>出料</b>剩下的磁磚、木料、鋼筋、水泥，拍張照刊登，寫清楚數量、地點和最晚清場日。</li>'+
+    '<li><b>求料</b>只需要一點點？刊登「求料」，手上有剩料的人就會看到你。</li>'+
+    '<li><b>聯絡接料</b>按「傳訊息」或直接打電話，約時間到現場看貨、載走。</li>'+
+   '</ol></div>'+
+   '<div class="panelcard"><div class="sec-h">可以刊登</div><ul class="about-list">'+
+    '<li>沒用完的建材：磁磚、木料、鋼筋、水泥、塗料、管線</li>'+
+    '<li>還能用的門窗、衛浴、廚具、五金和工具</li>'+
+   '</ul></div>'+
+   '<div class="panelcard about-warn"><div class="sec-h">不能刊登</div><ul class="about-list">'+
+    '<li>營建廢棄物（拆除下來的混合廢料）</li>'+
+    '<li>剩餘土石方</li>'+
+   '</ul><span style="font-size:13.5px;color:var(--muted)">這兩類依法要由合法業者清運並申報，請不要私下買賣或載運。</span></div>'+
+   '<div class="panelcard"><div class="sec-h">交易提醒</div><ul class="about-list">'+
+    '<li>先到現場看過貨再付款，不要先匯款。</li>'+
+    '<li>接好料只提供刊登和聯絡，不經手付款和運送，數量、品質和價格請雙方自行確認。</li>'+
+   '</ul></div>'+
+   '<div class="panelcard"><div class="sec-h">聯絡我們</div><span>有問題或建議，歡迎寫信到 <b>virea.tw@gmail.com</b></span></div>'+
+   '<p class="about-meta">接好料 ReMat · remat.tw</p>'+
+   '</div>';
+}
 function render(){
   renderTop();renderBadge();
-  if(S.view==="browse")renderList();else if(S.view==="me")renderMe();else renderChats();
+  if(S.view==="browse")renderList();else if(S.view==="me")renderMe();else if(S.view==="chats")renderChats();else renderAbout();
   if(S.openId)renderDetailBody();
   if(S.chat)renderChatHead();
 }
 
 /* ---------- views ---------- */
-const VIEWS={browse:["#browseView","#navBrowse"],me:["#meView","#navMe"],chats:["#chatsView","#navChats"]};
+const VIEWS={browse:["#browseView","#navBrowse"],me:["#meView","#navMe"],chats:["#chatsView","#navChats"],about:["#aboutView","#navAbout"]};
 function setView(v){
   S.view=v;
   document.querySelectorAll("[data-tview]").forEach(b=>{if(b.getAttribute("data-tview")===v)b.setAttribute("aria-current","page");else b.removeAttribute("aria-current");});
@@ -1040,6 +1081,7 @@ $("#logoLink").onclick=e=>{e.preventDefault();setView("browse");};
 $("#navBrowse").onclick=()=>setView("browse");
 $("#navMe").onclick=()=>setView("me");
 $("#navChats").onclick=()=>setView("chats");
+$("#navAbout").onclick=()=>setView("about");
 document.querySelectorAll("[data-tview]").forEach(b=>b.onclick=()=>setView(b.getAttribute("data-tview")));
 $("#tnPost").onclick=()=>openPost(null);
 document.querySelector('[data-tview="browse"]').setAttribute("aria-current","page");
