@@ -265,6 +265,48 @@ textarea.inp{min-height:84px;resize:vertical}
 .skel{height:118px;border-radius:12px;background:linear-gradient(90deg,#E4E2DA,#ECEAE3,#E4E2DA);background-size:200% 100%;animation:sh 1.2s infinite}
 @keyframes sh{to{background-position:-200% 0}}
 @media (prefers-reduced-motion:reduce){.skel{animation:none}}
+
+/* ---------- 版面：手機（預設）／平板 iPad ≥768px／電腦 ≥1100px ---------- */
+.topnav{display:none}
+.panel-body{min-height:0}
+@media (min-width:768px){
+  .app{max-width:none;padding-bottom:40px}
+  .nav{display:none}
+  .top-in{max-width:1280px;margin:0 auto;padding:12px 24px;gap:16px}
+  .topnav{display:flex;align-items:center;gap:4px;margin-left:auto}
+  .tn{position:relative;border:0;background:transparent;border-radius:10px;padding:9px 14px;font-weight:700;font-size:15px;color:var(--ink);display:flex;align-items:center;gap:6px}
+  .tn:hover{background:rgba(27,28,30,.07)}
+  .tn[aria-current="page"]{background:rgba(27,28,30,.12)}
+  .tn .badge{position:static}
+  .topnav .post-btn{margin-left:6px;padding:9px 18px;font-size:15px;background:var(--ink);color:#fff;box-shadow:none}
+  .loc-pill{margin-left:0;max-width:220px}
+  #browseView,#meView,#chatsView{max-width:1280px;margin:0 auto;padding:0 8px}
+  .chips{flex-wrap:wrap;overflow:visible}
+  #list,#meList{grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px}
+  #list .card,#meList .card{grid-template-columns:1fr;padding:0;gap:0;overflow:hidden;align-content:start;transition:box-shadow .15s}
+  #list .card:hover,#meList .card:hover{box-shadow:0 4px 18px rgba(0,0,0,.08)}
+  #list .thumb,#meList .thumb{width:100%;height:auto;aspect-ratio:4/3;border-radius:0}
+  #list .glyph,#meList .glyph{font-size:64px}
+  #list .c-body,#meList .c-body{padding:12px 14px 14px;gap:4px}
+  .list .empty,.list .skel{grid-column:1/-1}
+  .me{max-width:980px;margin:0 auto;padding:24px 16px}
+  #chatsView{max-width:820px}
+  .threads{border:1px solid var(--line);border-radius:12px;overflow:hidden;margin:0 16px}
+  .sheet .panel{inset:auto;top:4vh;bottom:4vh;left:50%;transform:translateX(-50%);width:min(680px,92vw);max-width:none;margin:0;border-radius:16px;overflow:hidden;box-shadow:0 24px 64px rgba(0,0,0,.35)}
+  #locSheet .panel,#loginSheet .panel{top:8vh;bottom:auto;max-height:84vh}
+  .toast{bottom:32px}
+}
+@media (min-width:1100px){
+  .browse-grid{display:grid;grid-template-columns:300px minmax(0,1fr);gap:8px;align-items:start}
+  .side{position:sticky;top:76px;padding-bottom:16px}
+  .side .filters{flex-direction:column;align-items:stretch}
+  .side .filters select,.side .tog{width:100%}
+  #list{grid-template-columns:repeat(auto-fill,minmax(240px,1fr));padding-top:12px}
+  #detailSheet .panel{width:min(1040px,94vw)}
+  #detailSheet .panel-body{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);align-items:start}
+  #dPhotos{position:sticky;top:0}
+  #dPhotos .gallery{aspect-ratio:1/1}
+}
 </style>
 </head>
 <body>
@@ -278,6 +320,15 @@ textarea.inp{min-height:84px;resize:vertical}
         <span class="logo-sub">工地剩料，就近接手</span>
       </span>
       </a>
+      <nav class="topnav" aria-label="主選單">
+        <button class="tn" type="button" data-tview="browse">找料</button>
+        <button class="tn" type="button" data-tview="chats">訊息<span class="badge" id="chatBadge2" hidden></span></button>
+        <button class="tn" type="button" data-tview="me">我的</button>
+        <button class="post-btn" type="button" id="tnPost">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+          刊登
+        </button>
+      </nav>
       <button class="loc-pill" id="locBtn" type="button" aria-label="設定我的位置">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a7 7 0 0 0-7 7c0 5.2 7 13 7 13s7-7.8 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/></svg>
         <span id="locText">設定位置</span>
@@ -288,6 +339,8 @@ textarea.inp{min-height:84px;resize:vertical}
   <main id="browseView">
     <div class="stats" id="stats"></div>
     <div id="notices"></div>
+    <div class="browse-grid">
+    <aside class="side">
     <div class="seg" role="group" aria-label="出料或求料">
       <button type="button" id="kindOffer" aria-pressed="true">出料<small>有人多出來的</small></button>
       <button type="button" id="kindWant" aria-pressed="false">求料<small>有人在找的</small></button>
@@ -306,7 +359,11 @@ textarea.inp{min-height:84px;resize:vertical}
       <label class="tog"><input type="checkbox" id="freeOnly"> 只看免費</label>
       <label class="tog"><input type="checkbox" id="showDone"> 顯示已接走</label>
     </div>
+    </aside>
+    <section class="main-col">
     <div class="list" id="list" aria-live="polite"></div>
+    </section>
+    </div>
   </main>
 
   <main id="meView" hidden></main>
@@ -608,6 +665,7 @@ function render(){
 const VIEWS={browse:["#browseView","#navBrowse"],me:["#meView","#navMe"],chats:["#chatsView","#navChats"]};
 function setView(v){
   S.view=v;
+  document.querySelectorAll("[data-tview]").forEach(b=>{if(b.getAttribute("data-tview")===v)b.setAttribute("aria-current","page");else b.removeAttribute("aria-current");});
   Object.keys(VIEWS).forEach(k=>{$(VIEWS[k][0]).hidden=k!==v;const b=$(VIEWS[k][1]);if(k===v)b.setAttribute("aria-current","page");else b.removeAttribute("aria-current");});
   window.scrollTo(0,0);if(v==="me")renderMe(true);render();
 }
@@ -628,8 +686,8 @@ function hm(ms){const d=new Date(ms);return String(d.getHours()).padStart(2,"0")
 function dayKey(ms){const d=new Date(ms);return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate();}
 function dayText(ms){const d=new Date(ms),n=new Date();if(dayKey(ms)===dayKey(n.getTime()))return"今天";if(dayKey(ms)===dayKey(n.getTime()-86400000))return"昨天";return (d.getMonth()+1)+"月"+d.getDate()+"日";}
 function renderBadge(){
-  const n=S.threads.filter(isUnread).length;const b=$("#chatBadge");
-  b.hidden=!n;b.textContent=n>9?"9+":String(n);
+  const n=S.threads.filter(isUnread).length;
+  ["#chatBadge","#chatBadge2"].forEach(id=>{const b=$(id);if(b){b.hidden=!n;b.textContent=n>9?"9+":String(n);}});
   $("#navChats").setAttribute("aria-label",n?"訊息，"+n+" 則未讀":"訊息");
 }
 function threadThumb(t){
@@ -982,6 +1040,9 @@ $("#logoLink").onclick=e=>{e.preventDefault();setView("browse");};
 $("#navBrowse").onclick=()=>setView("browse");
 $("#navMe").onclick=()=>setView("me");
 $("#navChats").onclick=()=>setView("chats");
+document.querySelectorAll("[data-tview]").forEach(b=>b.onclick=()=>setView(b.getAttribute("data-tview")));
+$("#tnPost").onclick=()=>openPost(null);
+document.querySelector('[data-tview="browse"]').setAttribute("aria-current","page");
 $("#navPost").onclick=()=>openPost(null);
 
 /* ---------- boot ---------- */
