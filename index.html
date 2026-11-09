@@ -1,0 +1,1063 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>接好料 ReMat</title>
+<meta name="description" content="工地剩料，就近接手。磁磚、木料、鋼筋、水泥，多出來的材料刊上來，附近需要的人直接來接。">
+<meta name="theme-color" content="#FFC21A">
+<link rel="manifest" href="/manifest.json">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="接好料">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta property="og:type" content="website">
+<meta property="og:title" content="接好料 ReMat">
+<meta property="og:description" content="工地剩料，就近接手。多出來的材料刊上來，附近需要的人直接來接。">
+<meta property="og:url" content="https://remat.tw/">
+<meta property="og:image" content="https://remat.tw/icon-512.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* 工地現場：水泥灰底、安全黃標示、黑字。單欄手機 App，底部導覽。 */
+  --paper:#EFEEE8;
+  --card:#FFFFFF;
+  --ink:#1B1C1E;
+  --muted:#686B70;
+  --line:#D9D7CE;
+  --hazard:#FFC21A;
+  --go:#1E7F47;
+  --hold:#2C64C4;
+  --warn:#D4470E;
+  --display:"Barlow Condensed","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+  --body:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--hold);outline-offset:2px}
+.app{max-width:520px;margin:0 auto;min-height:100%;padding-bottom:96px;background:var(--paper)}
+.num{font-family:var(--display);font-variant-numeric:tabular-nums;letter-spacing:.01em}
+
+/* header */
+.top{position:sticky;top:0;z-index:5;background:var(--hazard);color:var(--ink);border-bottom:1px solid rgba(27,28,30,.14)}
+.top-in{display:flex;align-items:center;gap:12px;padding:12px 16px;min-height:68px;box-sizing:border-box}
+.logo-wrap{display:flex;align-items:center;gap:12px;text-decoration:none;color:var(--ink);min-width:0}
+.logo-icon{flex:none;display:block}
+/* 圖示 44px = 文字區塊 44px（24 + 4 + 16），上下緣對齊 */
+.logo{display:flex;flex-direction:column;justify-content:space-between;align-items:flex-start;height:44px;text-decoration:none;color:var(--ink);min-width:0}
+.logo-mark{font-weight:900;font-size:22px;line-height:24px;letter-spacing:.05em;flex:none}
+.logo-row{display:flex;align-items:baseline;gap:8px;height:24px}
+.logo-en{font-family:var(--display);font-weight:800;font-size:17px;line-height:24px;letter-spacing:.04em;color:#4A3F12}
+.logo-sub{font-size:13.5px;color:#4A3F12;line-height:16px;white-space:nowrap;align-self:stretch;text-align:justify;text-align-last:justify;text-justify:inter-character}
+.loc-pill{margin-left:auto;display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.72);border:1px solid rgba(27,28,30,.16);color:var(--ink);border-radius:999px;height:36px;padding:0 12px;font-size:14px;line-height:1;max-width:50%;flex:none;box-sizing:border-box}
+.loc-pill svg{color:var(--warn);flex:none}
+.loc-pill span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+.stats{display:flex;flex-wrap:wrap;gap:4px 16px;padding:10px 16px 0;font-size:13px;color:var(--muted)}
+.stats span{white-space:nowrap}
+.stats b{color:var(--ink);font-family:var(--display);font-size:17px;margin-right:2px}
+
+/* segmented */
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:12px 16px 0;background:#E2E0D8;border-radius:10px;padding:4px}
+.seg button{border:0;background:transparent;border-radius:7px;padding:9px 6px;font-weight:700;font-size:15px;color:var(--muted);display:flex;flex-direction:column;align-items:center;line-height:1.25}
+.seg button small{font-weight:500;font-size:12px}
+.seg button[aria-pressed="true"]{background:var(--card);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.12)}
+
+.search{margin:12px 16px 0;position:relative}
+.search input{width:100%;border:1.5px solid var(--line);background:var(--card);border-radius:10px;padding:11px 12px 11px 40px;font-size:16px}
+.search svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted)}
+
+.chips{display:flex;gap:8px;overflow-x:auto;padding:12px 16px 2px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;border:1.5px solid var(--line);background:var(--card);border-radius:999px;padding:6px 13px;font-size:14px;font-weight:500;white-space:nowrap}
+.chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+
+.filters{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:10px 16px 4px}
+.filters select{border:1.5px solid var(--line);background:var(--card);border-radius:8px;padding:6px 8px;font-size:14px}
+.tog{display:flex;align-items:center;gap:6px;font-size:14px;color:var(--muted);border:1.5px solid var(--line);background:var(--card);border-radius:8px;padding:5px 10px}
+.tog input{accent-color:var(--ink);width:16px;height:16px;margin:0}
+
+/* list */
+.list{display:grid;gap:10px;padding:10px 16px 16px}
+.card{display:grid;grid-template-columns:96px 1fr;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px;text-align:left;width:100%}
+.card.done{opacity:.6}
+.thumb{width:96px;height:96px;border-radius:8px;overflow:hidden;background:#E6E4DC;position:relative;display:grid;place-items:center}
+.thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.glyph{font-weight:900;font-size:40px;color:#B5B2A6;line-height:1}
+.thumb .corner{position:absolute;left:0;bottom:0;width:100%;height:6px;background:repeating-linear-gradient(-45deg,var(--hazard) 0 6px,var(--ink) 6px 12px);opacity:.85}
+.c-body{min-width:0;display:flex;flex-direction:column;gap:3px}
+.tags{display:flex;flex-wrap:wrap;gap:5px;align-items:center}
+.cat{font-size:12px;color:var(--muted);font-weight:500}
+.pill{font-size:11.5px;font-weight:700;border-radius:4px;padding:1px 6px;line-height:1.6}
+.p-open{background:#E2F2E8;color:var(--go)}
+.p-hold{background:#E3ECFB;color:var(--hold)}
+.p-done{background:#E6E6E6;color:#555}
+.p-hot{background:#FDE7DC;color:var(--warn)}
+.p-sample{background:var(--hazard);color:var(--ink)}
+.card h3{margin:0;font-size:16px;font-weight:700;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;text-wrap:balance}
+.qty{font-size:13.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.qty .num{font-size:18px;color:var(--ink);font-weight:700;margin-right:2px}
+.c-foot{display:flex;justify-content:space-between;gap:8px;align-items:baseline;margin-top:auto}
+.price{font-weight:900;font-size:15px;white-space:nowrap;flex:none}
+.price.free{color:var(--go)}
+.where{font-size:12.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:right}
+
+.empty{background:var(--card);border:1.5px dashed var(--line);border-radius:12px;padding:28px 20px;text-align:center;color:var(--muted)}
+.empty b{display:block;color:var(--ink);font-size:16px;margin-bottom:4px}
+.notice{margin:12px 16px 0;background:#FFF6D6;border:1px solid #F0D27A;border-radius:10px;padding:10px 12px;font-size:13.5px}
+.notice.err{background:#FDE7DC;border-color:#F2B79A}
+
+/* bottom nav */
+.nav{position:fixed;left:0;right:0;bottom:0;z-index:6;background:var(--card);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
+.nav-in{max-width:520px;margin:0 auto;display:grid;grid-template-columns:auto 1fr 1fr 1fr;gap:4px;align-items:center;padding:6px 16px 8px}
+.nav-btn{border:0;background:none;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:12px;color:var(--muted);padding:4px}
+.nav-btn[aria-current="page"]{color:var(--ink);font-weight:700}
+.post-btn{border:0;background:var(--hazard);color:var(--ink);font-weight:900;font-size:16px;border-radius:12px;padding:12px 20px;display:flex;align-items:center;gap:6px;box-shadow:0 2px 0 var(--ink)}
+
+/* sheets */
+.sheet{position:fixed;inset:0;z-index:20;display:none;background:rgba(20,20,22,.45)}
+.sheet.open{display:block}
+.panel{position:absolute;inset:0;max-width:520px;margin:0 auto;background:var(--paper);display:flex;flex-direction:column}
+.panel-head{display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--card);border-bottom:1px solid var(--line)}
+.panel-head h2{margin:0;font-size:17px;font-weight:700;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.icon-btn{border:0;background:#ECEAE3;border-radius:8px;width:38px;height:38px;display:grid;place-items:center;flex:none}
+.panel-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.panel-foot{background:var(--card);border-top:1px solid var(--line);padding:10px 16px calc(10px + env(safe-area-inset-bottom));display:flex;gap:10px}
+.btn{border:1.5px solid var(--ink);background:var(--card);border-radius:10px;padding:11px 16px;font-weight:700;font-size:15px;display:inline-flex;align-items:center;justify-content:center;gap:6px;text-decoration:none;color:var(--ink)}
+.btn.primary{background:var(--ink);color:#fff}
+.btn.yellow{background:var(--hazard);border-color:var(--ink)}
+.btn.danger{border-color:var(--warn);color:var(--warn)}
+.btn.grow{flex:1}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn.sm{padding:6px 12px;font-size:13.5px;border-radius:8px}
+
+/* detail */
+.gallery{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;background:#DCDAD1;aspect-ratio:4/3}
+.gallery>*{flex:none;width:100%;height:100%;scroll-snap-align:start;display:grid;place-items:center}
+.gallery img{width:100%;height:100%;object-fit:contain;background:#1B1C1E}
+.gallery .glyph{font-size:96px}
+.g-count{position:relative}
+.g-badge{position:absolute;right:12px;bottom:12px;background:rgba(0,0,0,.65);color:#fff;font-size:12px;border-radius:999px;padding:2px 9px}
+.d-sec{background:var(--card);border-bottom:1px solid var(--line);padding:14px 16px;display:grid;gap:8px}
+.d-title{margin:0;font-size:20px;font-weight:900;line-height:1.3;text-wrap:balance}
+.d-big{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.box{border:1.5px solid var(--line);border-radius:10px;padding:8px 12px}
+.box .lbl{font-size:12px;color:var(--muted)}
+.box .val{font-size:15px;font-weight:700}
+.box .val .num{font-size:26px;line-height:1.1}
+.kv{display:grid;grid-template-columns:84px 1fr;gap:6px 10px;font-size:14.5px}
+.kv dt{color:var(--muted)}
+.kv dd{margin:0;word-break:break-word}
+.desc{white-space:pre-wrap;margin:0;font-size:15px;max-width:65ch}
+.sec-h{font-size:13px;font-weight:700;color:var(--muted);letter-spacing:.06em;margin:0}
+.contact-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.contact-row .v{font-family:var(--display);font-size:22px;font-weight:700;margin-right:auto;font-variant-numeric:tabular-nums}
+.statusbar{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.statusbar button{border:1.5px solid var(--line);background:var(--card);border-radius:8px;padding:8px 4px;font-weight:700;font-size:14px}
+.statusbar button[aria-pressed="true"]{border-color:var(--ink);background:var(--ink);color:#fff}
+.match{display:grid;gap:8px}
+.match .card{grid-template-columns:64px 1fr}
+.match .thumb{width:64px;height:64px}
+.match .glyph{font-size:26px}
+
+/* form */
+.form{padding:14px 16px 24px;display:grid;gap:16px}
+.field{display:grid;gap:6px}
+.field>label,.field>.lbl{font-weight:700;font-size:14px}
+.field .hint{font-size:12.5px;color:var(--muted);font-weight:400}
+.req{color:var(--warn);margin-left:2px}
+.inp{width:100%;border:1.5px solid var(--line);background:var(--card);border-radius:9px;padding:10px 12px;font-size:16px}
+textarea.inp{min-height:84px;resize:vertical}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.row-qty{display:grid;grid-template-columns:1fr 120px;gap:8px}
+.radios{display:flex;flex-wrap:wrap;gap:8px}
+.radios label{position:relative}
+.radios input{position:absolute;opacity:0;pointer-events:none}
+.radios span{display:inline-block;border:1.5px solid var(--line);background:var(--card);border-radius:8px;padding:7px 12px;font-size:14px;font-weight:500}
+.radios input:checked+span{border-color:var(--ink);background:var(--ink);color:#fff}
+.radios input:focus-visible+span{outline:3px solid var(--hold);outline-offset:2px}
+.kind-pick{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.kind-pick label{position:relative}
+.kind-pick input{position:absolute;opacity:0}
+.kind-pick span{display:block;border:2px solid var(--line);background:var(--card);border-radius:10px;padding:10px 12px}
+.kind-pick span b{display:block;font-size:17px}
+.kind-pick span small{color:var(--muted);font-size:12.5px}
+.kind-pick input:checked+span{border-color:var(--ink);box-shadow:inset 0 -5px 0 var(--hazard)}
+.kind-pick input:focus-visible+span{outline:3px solid var(--hold);outline-offset:2px}
+.photos{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.photos .ph{aspect-ratio:1;border-radius:8px;overflow:hidden;background:#E6E4DC;position:relative}
+.photos .ph img{width:100%;height:100%;object-fit:cover}
+.photos .ph button{position:absolute;top:4px;right:4px;border:0;background:rgba(0,0,0,.65);color:#fff;border-radius:999px;width:24px;height:24px;font-size:14px;line-height:1}
+.photos .add{aspect-ratio:1;border:1.5px dashed #A9A698;border-radius:8px;display:grid;place-items:center;color:var(--muted);font-size:13px;text-align:center;background:var(--card);cursor:pointer}
+.check{display:flex;align-items:center;gap:8px;font-size:14.5px}
+.check input{width:18px;height:18px;accent-color:var(--ink);margin:0}
+.err-msg{color:var(--warn);font-size:13px;font-weight:500}
+
+/* me */
+.me{padding:14px 16px;display:grid;gap:14px}
+.me h2{margin:0;font-size:18px}
+.panelcard{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;display:grid;gap:12px}
+.mini-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.mini-stats div{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+.mini-stats b{display:block;font-family:var(--display);font-size:26px;line-height:1.1}
+.mini-stats span{font-size:12px;color:var(--muted)}
+
+.county-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.county-grid button{border:1.5px solid var(--line);background:var(--card);border-radius:8px;padding:9px 4px;font-size:15px}
+.county-grid button[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+
+.toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 16px;border-radius:10px;font-size:14px;z-index:40;max-width:90%;display:none}
+.toast.show{display:block}
+.dialog{position:fixed;inset:0;z-index:30;background:rgba(20,20,22,.5);display:none;place-items:center;padding:24px}
+.dialog.open{display:grid}
+.dialog-box{background:var(--card);border-radius:14px;padding:18px;max-width:360px;width:100%;display:grid;gap:12px}
+.dialog-box p{margin:0}
+.dialog-box .acts{display:flex;gap:8px;justify-content:flex-end}
+
+/* chat */
+.nav-btn{position:relative}
+.badge[hidden]{display:none}
+.badge{position:absolute;top:0;left:calc(50% + 4px);background:var(--warn);color:#fff;font-size:11px;font-weight:700;border-radius:999px;min-width:18px;height:18px;padding:0 5px;display:grid;place-items:center;line-height:1}
+.threads{display:grid;border-top:1px solid var(--line)}
+.thread{display:grid;grid-template-columns:52px 1fr auto;gap:12px;align-items:center;background:var(--card);border:0;border-bottom:1px solid var(--line);padding:12px 16px;text-align:left;width:100%}
+.thread .thumb,.chat-item .thumb{width:52px;height:52px}
+.thread .glyph,.chat-item .glyph{font-size:24px}
+.t-min{min-width:0;display:grid;gap:1px}
+.t-name{font-weight:700;font-size:15px}
+.t-item,.t-last{font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.t-last{font-size:14px}
+.thread.unread .t-last{color:var(--ink);font-weight:700}
+.t-meta{display:flex;flex-direction:column;align-items:flex-end;gap:6px;font-size:12px;color:var(--muted)}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--warn)}
+.chat-item{display:grid;grid-template-columns:52px 1fr auto;gap:10px;align-items:center;padding:8px 16px;background:var(--card);border:0;border-bottom:1px solid var(--line);text-align:left;width:100%}
+.chat-item .go{font-size:13px;color:var(--hold);font-weight:700}
+.msgs{padding:12px 16px 16px;display:flex;flex-direction:column;gap:6px;min-height:100%}
+.day{align-self:center;font-size:12px;color:var(--muted);background:#E2E0D8;border-radius:999px;padding:2px 10px;margin:8px 0}
+.bub{max-width:78%;padding:8px 12px;border-radius:14px;font-size:15px;white-space:pre-wrap;word-break:break-word;line-height:1.45}
+.bub.them{align-self:flex-start;background:var(--card);border:1px solid var(--line);border-bottom-left-radius:4px}
+.bub.mine{align-self:flex-end;background:var(--hazard);border-bottom-right-radius:4px}
+.bub time{display:block;font-size:11px;color:var(--muted);margin-top:2px;text-align:right;font-variant-numeric:tabular-nums}
+.bub.mine time{color:#6B5300}
+.chat-empty{margin:auto;text-align:center;color:var(--muted);font-size:14px;padding:24px}
+.quick{display:flex;gap:6px;overflow-x:auto;padding:8px 16px 0;background:var(--card);border-top:1px solid var(--line);scrollbar-width:none}
+.quick::-webkit-scrollbar{display:none}
+.composer{display:flex;gap:8px;padding:8px 16px calc(8px + env(safe-area-inset-bottom));background:var(--card)}
+.composer input{flex:1;min-width:0;border:1.5px solid var(--line);border-radius:999px;padding:10px 14px;font-size:16px;background:var(--paper)}
+.send{border:0;background:var(--ink);color:#fff;border-radius:999px;width:44px;height:44px;display:grid;place-items:center;flex:none}
+.send:disabled{opacity:.5}
+.privacy{font-size:12.5px;color:var(--muted);margin:0}
+
+.lg-why{margin:0;font-size:14.5px;color:var(--muted)}
+.or{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:13px}
+.or::before,.or::after{content:"";flex:1;height:1px;background:var(--line)}
+.linkbtn{border:0;background:none;color:var(--hold);font-weight:500;font-size:14px;padding:6px 0;justify-self:start}
+.acct{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.acct .email{font-weight:700;word-break:break-all;margin-right:auto}
+
+.skel{height:118px;border-radius:12px;background:linear-gradient(90deg,#E4E2DA,#ECEAE3,#E4E2DA);background-size:200% 100%;animation:sh 1.2s infinite}
+@keyframes sh{to{background-position:-200% 0}}
+@media (prefers-reduced-motion:reduce){.skel{animation:none}}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <header class="top">
+    <div class="top-in">
+      <a class="logo-wrap" href="#" id="logoLink" aria-label="接好料 ReMat 首頁">
+        <svg class="logo-icon" width="44" height="44" viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#1B1C1E"/><path d="M24 58 V36 A10 10 0 0 1 34 26 H60" fill="none" stroke="#FFC21A" stroke-width="7" stroke-linecap="round"/><path d="M58 16 L72 26 L58 36 Z" fill="#FFC21A"/><path d="M76 42 V64 A10 10 0 0 1 66 74 H40" fill="none" stroke="#FFC21A" stroke-width="7" stroke-linecap="round"/><path d="M42 64 L28 74 L42 84 Z" fill="#FFC21A"/><rect x="35" y="49.5" width="14" height="10" rx="1.6" fill="#fff"/><rect x="51" y="49.5" width="14" height="10" rx="1.6" fill="#fff"/><rect x="43" y="37.5" width="14" height="10" rx="1.6" fill="#fff"/></svg>
+        <span class="logo">
+        <span class="logo-row"><span class="logo-mark">接好料</span><span class="logo-en">ReMat</span></span>
+        <span class="logo-sub">工地剩料，就近接手</span>
+      </span>
+      </a>
+      <button class="loc-pill" id="locBtn" type="button" aria-label="設定我的位置">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a7 7 0 0 0-7 7c0 5.2 7 13 7 13s7-7.8 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/></svg>
+        <span id="locText">設定位置</span>
+      </button>
+    </div>
+  </header>
+
+  <main id="browseView">
+    <div class="stats" id="stats"></div>
+    <div id="notices"></div>
+    <div class="seg" role="group" aria-label="出料或求料">
+      <button type="button" id="kindOffer" aria-pressed="true">出料<small>有人多出來的</small></button>
+      <button type="button" id="kindWant" aria-pressed="false">求料<small>有人在找的</small></button>
+    </div>
+    <div class="search">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+      <input id="q" type="search" placeholder="搜尋：60×60 磁磚、角材、PVC 管…" aria-label="搜尋材料">
+    </div>
+    <div class="chips" id="chips" role="group" aria-label="分類"></div>
+    <div class="filters">
+      <select id="sort" aria-label="排序">
+        <option value="new">最新刊登</option>
+        <option value="near">離我最近</option>
+        <option value="due">快要清場</option>
+      </select>
+      <label class="tog"><input type="checkbox" id="freeOnly"> 只看免費</label>
+      <label class="tog"><input type="checkbox" id="showDone"> 顯示已接走</label>
+    </div>
+    <div class="list" id="list" aria-live="polite"></div>
+  </main>
+
+  <main id="meView" hidden></main>
+  <main id="chatsView" hidden></main>
+</div>
+
+<nav class="nav" aria-label="主選單">
+  <div class="nav-in">
+    <button class="post-btn" id="navPost" type="button">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+      刊登
+    </button>
+    <button class="nav-btn" id="navBrowse" aria-current="page" type="button">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 10l9-7 9 7v10a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>
+      找料
+    </button>
+    <button class="nav-btn" id="navChats" type="button">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"/></svg>
+      訊息<span class="badge" id="chatBadge" hidden></span>
+    </button>
+    <button class="nav-btn" id="navMe" type="button">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>
+      我的
+    </button>
+  </div>
+</nav>
+
+<!-- detail sheet -->
+<div class="sheet" id="detailSheet" role="dialog" aria-modal="true" aria-labelledby="dHead">
+  <div class="panel">
+    <div class="panel-head">
+      <button class="icon-btn" type="button" data-close aria-label="返回">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+      </button>
+      <h2 id="dHead">材料詳情</h2>
+    </div>
+    <div class="panel-body">
+      <div id="dPhotos"></div>
+      <div id="dBody"></div>
+    </div>
+    <div class="panel-foot" id="dFoot"></div>
+  </div>
+</div>
+
+<!-- post sheet -->
+<div class="sheet" id="postSheet" role="dialog" aria-modal="true" aria-labelledby="pHead">
+  <div class="panel">
+    <div class="panel-head">
+      <button class="icon-btn" type="button" data-close aria-label="關閉">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+      <h2 id="pHead">刊登材料</h2>
+    </div>
+    <div class="panel-body">
+      <form id="postForm" class="form" novalidate></form>
+    </div>
+    <div class="panel-foot">
+      <button class="btn primary grow" type="submit" form="postForm" id="postSubmit">刊登</button>
+    </div>
+  </div>
+</div>
+
+<!-- chat sheet -->
+<div class="sheet" id="chatSheet" role="dialog" aria-modal="true" aria-labelledby="cHead">
+  <div class="panel">
+    <div class="panel-head">
+      <button class="icon-btn" type="button" data-close aria-label="返回">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+      </button>
+      <h2 id="cHead">聊天</h2>
+    </div>
+    <div id="cItem"></div>
+    <div class="panel-body" id="cBody"><div class="msgs" id="cMsgs"></div></div>
+    <div class="quick" id="cQuick"></div>
+    <form class="composer" id="cForm">
+      <input id="cInput" maxlength="500" placeholder="輸入訊息" autocomplete="off" aria-label="訊息內容">
+      <button class="send" type="submit" id="cSend" aria-label="送出訊息">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 20l18-8L3 4v6l12 2-12 2z"/></svg>
+      </button>
+    </form>
+  </div>
+</div>
+
+<!-- login sheet -->
+<div class="sheet" id="loginSheet" role="dialog" aria-modal="true" aria-labelledby="lgHead">
+  <div class="panel">
+    <div class="panel-head">
+      <button class="icon-btn" type="button" data-close aria-label="關閉">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+      <h2 id="lgHead">登入接好料</h2>
+    </div>
+    <div class="panel-body">
+      <form class="form" id="lgForm" novalidate>
+        <p class="lg-why" id="lgWhy">登入後就能刊登和傳訊息。只是看材料不用登入。</p>
+        <button class="btn" type="button" id="lgGoogle">用 Google 帳號登入</button>
+        <p class="lg-why" id="lgGoogleNote" hidden>從手機桌面打開時請用 Email 登入。想用 Google 帳號，請改用瀏覽器打開 remat.tw。</p>
+        <div class="or">或用 Email</div>
+        <div class="field"><label for="lgEmail">Email</label><input class="inp" id="lgEmail" type="email" autocomplete="email" inputmode="email" placeholder="you@example.com"></div>
+        <div class="field"><label for="lgPw">密碼 <span class="hint">註冊時請設定 6 個字以上</span></label><input class="inp" id="lgPw" type="password" autocomplete="current-password"></div>
+        <div class="err-msg" id="lgErr" role="alert"></div>
+        <div class="row2"><button class="btn" type="button" id="lgUp">註冊新帳號</button><button class="btn primary" type="submit" id="lgIn">登入</button></div>
+        <button class="linkbtn" type="button" id="lgReset">忘記密碼？</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- location sheet -->
+<div class="sheet" id="locSheet" role="dialog" aria-modal="true" aria-labelledby="lHead">
+  <div class="panel">
+    <div class="panel-head">
+      <button class="icon-btn" type="button" data-close aria-label="關閉">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+      <h2 id="lHead">我的工地在哪裡？</h2>
+    </div>
+    <div class="panel-body">
+      <div class="form">
+        <p style="margin:0;color:var(--muted);font-size:14px">用來算材料離你多遠。運費常常比材料還貴，越近越划算。</p>
+        <div class="field"><span class="lbl">縣市</span><div class="county-grid" id="countyGrid"></div></div>
+        <div class="field"><label for="locArea">鄉鎮區</label><input class="inp" id="locArea" placeholder="例：西屯區"></div>
+      </div>
+    </div>
+    <div class="panel-foot"><button class="btn primary grow" type="button" id="locSave">儲存位置</button></div>
+  </div>
+</div>
+
+<div class="dialog" id="dialog" role="alertdialog" aria-modal="true" aria-labelledby="dlgText">
+  <div class="dialog-box">
+    <p id="dlgText"></p>
+    <div class="acts"><button class="btn sm" type="button" id="dlgNo">取消</button><button class="btn sm primary" type="button" id="dlgYes">確定</button></div>
+  </div>
+</div>
+<div class="toast" id="toast" role="status"></div>
+
+<script src="/config.js"></script>
+<script type="module" src="/backend.js"></script>
+<script>
+(function(){
+"use strict";
+
+/* ---------- reference data ---------- */
+const COUNTIES=[
+ ["臺北市",25.04,121.56],["新北市",25.01,121.47],["基隆市",25.13,121.74],["桃園市",24.99,121.30],
+ ["新竹市",24.80,120.97],["新竹縣",24.84,121.01],["苗栗縣",24.56,120.82],["臺中市",24.15,120.67],
+ ["彰化縣",24.08,120.54],["南投縣",23.91,120.68],["雲林縣",23.71,120.43],["嘉義市",23.48,120.45],
+ ["嘉義縣",23.46,120.33],["臺南市",22.99,120.21],["高雄市",22.63,120.30],["屏東縣",22.67,120.49],
+ ["宜蘭縣",24.75,121.75],["花蓮縣",23.99,121.60],["臺東縣",22.76,121.14],["澎湖縣",23.57,119.58],
+ ["金門縣",24.43,118.32],["連江縣",26.16,119.95]
+];
+const CMAP={};COUNTIES.forEach(c=>CMAP[c[0]]={lat:c[1],lng:c[2]});
+const CATS=[
+ {id:"tile",name:"磁磚石材",g:"磚"},{id:"wood",name:"木料板材",g:"木"},{id:"steel",name:"鋼筋鋼材",g:"鋼"},
+ {id:"cement",name:"水泥砂石",g:"泥"},{id:"paint",name:"塗料防水",g:"漆"},{id:"bath",name:"衛浴廚具",g:"衛"},
+ {id:"door",name:"門窗玻璃",g:"窗"},{id:"mep",name:"水電管線",g:"管"},{id:"tool",name:"工具機具",g:"具"},
+ {id:"other",name:"其他",g:"雜"}
+];
+const CATMAP={};CATS.forEach(c=>CATMAP[c.id]=c);
+const UNITS=["箱","片","坪","支","根","包","桶","組","件","才","公尺","噸","立方公尺","批"];
+const PICKUP={self:"自取",help:"可幫忙搬上車",deliver:"可配送（運費另計）"};
+const STATUS={open:["可接料","p-open"],hold:["已預約","p-hold"],done:["已接走","p-done"]};
+
+/* ---------- state ---------- */
+const S={
+  db:null,B:null,authUser:null,uid:null,isOwner:false,canWrite:null,
+  listings:[],loading:true,loadErr:"",stale:false,
+  kind:"offer",cat:"all",q:"",sort:"new",freeOnly:false,showDone:false,view:"browse",
+  me:{name:"",phone:"",line:"",county:"",area:""},
+  openId:null,editId:null,newPhotos:null,keepPhotoCount:0,
+  threads:[],chat:null,msgs:[],msgUnsub:null,sending:false
+};
+
+/* ---------- helpers ---------- */
+const $=s=>document.querySelector(s);
+const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const safeImg=s=>(typeof s==="string"&&/^data:image\/(jpeg|png|webp);base64,/.test(s))?s:"";
+const fmtN=n=>{const x=Number(n);return isFinite(x)?x.toLocaleString("zh-TW"):"";};
+function toast(msg){const t=$("#toast");t.textContent=msg;t.classList.add("show");clearTimeout(toast._t);toast._t=setTimeout(()=>t.classList.remove("show"),2600);}
+function confirmBox(text){return new Promise(res=>{const d=$("#dialog");$("#dlgText").textContent=text;d.classList.add("open");
+  const done=v=>{d.classList.remove("open");$("#dlgYes").onclick=null;$("#dlgNo").onclick=null;res(v);};
+  $("#dlgYes").onclick=()=>done(true);$("#dlgNo").onclick=()=>done(false);$("#dlgYes").focus();});}
+function lsGet(k){try{return JSON.parse(localStorage.getItem(k));}catch(e){return null;}}
+function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+function timeAgo(ms){if(!ms)return"";const s=(Date.now()-ms)/1000;if(s<60)return"剛剛";if(s<3600)return Math.floor(s/60)+" 分鐘前";if(s<86400)return Math.floor(s/3600)+" 小時前";if(s<86400*7)return Math.floor(s/86400)+" 天前";const d=new Date(ms);return (d.getMonth()+1)+"/"+d.getDate();}
+function daysLeft(dstr){if(!dstr||!/^\d{4}-\d{2}-\d{2}$/.test(dstr))return null;const [y,m,d]=dstr.split("-").map(Number);const t=new Date(y,m-1,d);const n=new Date();n.setHours(0,0,0,0);return Math.round((t-n)/86400000);}
+function mdText(dstr){if(!dstr)return"";const p=dstr.split("-");return Number(p[1])+"/"+Number(p[2]);}
+function km(a,b){const R=6371,toR=x=>x*Math.PI/180;const dLat=toR(b.lat-a.lat),dLng=toR(b.lng-a.lng);const h=Math.sin(dLat/2)**2+Math.cos(toR(a.lat))*Math.cos(toR(b.lat))*Math.sin(dLng/2)**2;return 2*R*Math.asin(Math.sqrt(h));}
+function distScore(l){
+  if(!S.me.county||!CMAP[l.county])return 9999;
+  if(l.county===S.me.county){return (S.me.area&&l.area&&String(l.area).indexOf(S.me.area.replace(/區|鄉|鎮|市$/,""))===0)?0:1;}
+  return 2+km(CMAP[S.me.county],CMAP[l.county]);
+}
+function distLabel(l){
+  if(!S.me.county)return"";
+  if(l.county===S.me.county){return distScore(l)===0?"同區":"同縣市";}
+  if(CMAP[l.county]&&CMAP[S.me.county])return"直線約 "+Math.round(km(CMAP[S.me.county],CMAP[l.county]))+" km";
+  return"";
+}
+function priceHTML(l){
+  const want=l.kind==="want";const u=l.unit||"";
+  switch(l.priceMode){
+    case"free":return '<span class="price free">'+(want?"希望免費":"免費送")+'</span>';
+    case"lot":return '<span class="price">'+(want?"預算 ":"整批 ")+'$<span class="num">'+fmtN(l.price)+'</span></span>';
+    case"unit":return '<span class="price">'+(want?"預算 ":"")+'$<span class="num">'+fmtN(l.price)+'</span> / '+esc(u)+'</span>';
+    default:return '<span class="price">'+(want?"預算可議":"價格可議")+'</span>';
+  }
+}
+function urgencyPill(l){
+  if(l.status==="done")return"";const d=daysLeft(l.deadline);if(d===null)return"";
+  if(l.kind==="offer"){if(d<0)return'<span class="pill p-done">已過清場日</span>';if(d<=7)return'<span class="pill p-hot">'+(d===0?"今天要清":d+" 天內清場")+'</span>';return"";}
+  if(d>=0&&d<=7)return'<span class="pill p-hot">'+(d===0?"今天要用":d+" 天內要用")+'</span>';return"";
+}
+function thumbHTML(l){
+  const src=safeImg(l.thumb);const c=CATMAP[l.cat]||CATMAP.other;
+  return '<div class="thumb">'+(src?'<img alt="" src="'+esc(src)+'">':'<span class="glyph" aria-hidden="true">'+esc(c.g)+'</span><span class="corner"></span>')+'</div>';
+}
+function cardHTML(l){
+  const c=CATMAP[l.cat]||CATMAP.other;const st=STATUS[l.status]||STATUS.open;
+  const where=[l.county,l.area].filter(Boolean).join(" ");const dl=distLabel(l);
+  return '<button type="button" class="card'+(l.status==="done"?" done":"")+'" data-open="'+esc(l.id)+'">'+thumbHTML(l)+
+   '<div class="c-body"><div class="tags"><span class="cat">'+esc(c.name)+'</span><span class="pill '+st[1]+'">'+st[0]+'</span>'+urgencyPill(l)+(l.sample?'<span class="pill p-sample">範例</span>':'')+'</div>'+
+   '<h3>'+esc(l.title)+'</h3>'+
+   '<div class="qty"><span class="num">'+fmtN(l.qty)+'</span>'+esc(l.unit)+(l.spec?' · '+esc(l.spec):'')+'</div>'+
+   '<div class="c-foot">'+priceHTML(l)+'<span class="where">'+esc(dl?dl+" · "+where:where)+'</span></div></div></button>';
+}
+
+/* ---------- filtering ---------- */
+function visible(){
+  const q=S.q.trim().toLowerCase();
+  let arr=S.listings.filter(l=>l&&l.title&&(l.kind||"offer")===S.kind);
+  if(S.cat!=="all")arr=arr.filter(l=>l.cat===S.cat);
+  if(!S.showDone)arr=arr.filter(l=>l.status!=="done");
+  if(S.freeOnly)arr=arr.filter(l=>l.priceMode==="free");
+  if(q){const parts=q.split(/\s+/);arr=arr.filter(l=>{const h=[l.title,l.spec,l.desc,l.county,l.area,(CATMAP[l.cat]||{}).name].join(" ").toLowerCase().replace(/[x×*]/g,"x");return parts.every(p=>h.indexOf(p.replace(/[x×*]/g,"x"))>=0);});}
+  if(S.sort==="near"&&S.me.county)arr.sort((a,b)=>distScore(a)-distScore(b)||(b.createdAt||0)-(a.createdAt||0));
+  else if(S.sort==="due")arr.sort((a,b)=>{const da=daysLeft(a.deadline),db=daysLeft(b.deadline);return (da===null?1e9:da<0?1e8:da)-(db===null?1e9:db<0?1e8:db);});
+  else arr.sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+  return arr;
+}
+
+/* ---------- render ---------- */
+function renderTop(){
+  $("#locText").textContent=S.me.county?(S.me.county+(S.me.area?" "+S.me.area:"")):"設定位置";
+  const offers=S.listings.filter(l=>l.kind!=="want"&&l.status!=="done").length;
+  const wants=S.listings.filter(l=>l.kind==="want"&&l.status!=="done").length;
+  const done=S.listings.filter(l=>l.status==="done").length;
+  $("#stats").innerHTML='<span><b>'+offers+'</b>筆出料中</span><span><b>'+wants+'</b>筆求料中</span><span><b>'+done+'</b>批已接走</span>';
+  $("#kindOffer").setAttribute("aria-pressed",S.kind==="offer");$("#kindWant").setAttribute("aria-pressed",S.kind==="want");
+  const chips=$("#chips");
+  if(!chips.childElementCount)chips.innerHTML=[{id:"all",name:"全部"}].concat(CATS).map(c=>'<button type="button" class="chip" data-cat="'+c.id+'">'+esc(c.name)+'</button>').join("");
+  chips.querySelectorAll("[data-cat]").forEach(b=>b.setAttribute("aria-pressed",b.getAttribute("data-cat")===S.cat));
+  let n="";
+  if(S.loadErr)n+='<div class="notice err">'+esc(S.loadErr)+'</div>';
+  else if(S.stale)n+='<div class="notice">資料還在連線中，畫面上的內容可能不是最新的。</div>';
+  if(S.ready&&!S.uid&&!S.loadErr&&!S.hideLoginHint)n+='<div class="notice">看材料不用登入。想刊登或傳訊息，<button type="button" class="linkbtn" data-login style="padding:0">按這裡登入</button>。</div>';
+  $("#notices").innerHTML=n;
+}
+function renderList(){
+  const el=$("#list");
+  if(S.loading&&!S.listings.length&&!S.loadErr){el.innerHTML='<div class="skel"></div><div class="skel"></div><div class="skel"></div>';return;}
+  const arr=visible();
+  if(!arr.length){
+    const any=S.listings.some(l=>(l.kind||"offer")===S.kind);
+    el.innerHTML='<div class="empty"><b>'+(any?"沒有符合條件的材料":(S.kind==="offer"?"還沒有人刊登出料":"還沒有人刊登求料"))+'</b>'+(any?"換個關鍵字或分類試試看。":"按下方「刊登」，第一筆就是你的。")+'</div>';return;
+  }
+  el.innerHTML=arr.map(cardHTML).join("");
+}
+function renderMe(full){
+  const v=$("#meView");
+  const mine=S.listings.filter(l=>S.uid&&l.ownerId===S.uid);
+  const act=mine.filter(l=>l.status!=="done").length,dn=mine.filter(l=>l.status==="done").length;
+  const statsH='<div><b>'+mine.length+'</b><span>刊登總數</span></div><div><b>'+act+'</b><span>進行中</span></div><div><b>'+dn+'</b><span>已接走</span></div>';
+  const listH=mine.length?mine.sort((a,b)=>(b.createdAt||0)-(a.createdAt||0)).map(cardHTML).join(""):'<div class="empty"><b>還沒有刊登</b>工地多出來的料，拍張照就能刊。</div>';
+  if(!full&&$("#meStats")){$("#meStats").innerHTML=statsH;$("#meList").innerHTML=listH;$("#meLoc").textContent=S.me.county?(S.me.county+" "+(S.me.area||"")):"設定位置";return;}
+  v.innerHTML='<div class="me">'+
+   '<h2>我的</h2>'+
+   '<div class="mini-stats" id="meStats">'+statsH+'</div>'+
+   '<div class="panelcard"><div class="sec-h">我的聯絡方式</div>'+
+    '<p style="margin:0;font-size:13px;color:var(--muted)">只有你自己看得到，刊登時會自動帶入。別人要點開你的刊登才會看到電話或 LINE。</p>'+
+    '<div class="field"><label for="meName">聯絡人／公司</label><input class="inp" id="meName" value="'+esc(S.me.name)+'" placeholder="例：陳師傅、大樹營造"></div>'+
+    '<div class="row2"><div class="field"><label for="mePhone">電話</label><input class="inp" id="mePhone" inputmode="tel" value="'+esc(S.me.phone)+'" placeholder="0912-345-678"></div>'+
+    '<div class="field"><label for="meLine">LINE ID</label><input class="inp" id="meLine" value="'+esc(S.me.line)+'" placeholder="選填"></div></div>'+
+    '<div class="field"><span class="lbl">工地位置</span><button type="button" class="btn" id="meLoc">'+esc(S.me.county?(S.me.county+" "+(S.me.area||"")):"設定位置")+'</button></div>'+
+    '<button type="button" class="btn primary" id="meSave">儲存</button></div>'+
+   '<div class="sec-h">我的刊登</div>'+
+   '<div class="list" style="padding:0" id="meList">'+listH+'</div>'+
+   '<div class="panelcard"><div class="sec-h">帳號</div>'+(S.authUser?'<div class="acct"><span class="email">'+esc(S.authUser.email||"已登入")+'</span><button type="button" class="btn sm" id="meLogout">登出</button></div>'+(S.isOwner?'<span style="font-size:13.5px;color:var(--muted)">你是管理員，可以修改或刪除任何刊登。</span>':''):'<span style="font-size:14px;color:var(--muted)">還沒登入。登入後就能刊登、傳訊息，換手機也找得回你的刊登。</span><button type="button" class="btn primary" data-login>登入或註冊</button>')+'</div>'+
+   '</div>';
+}
+function render(){
+  renderTop();renderBadge();
+  if(S.view==="browse")renderList();else if(S.view==="me")renderMe();else renderChats();
+  if(S.openId)renderDetailBody();
+  if(S.chat)renderChatHead();
+}
+
+/* ---------- views ---------- */
+const VIEWS={browse:["#browseView","#navBrowse"],me:["#meView","#navMe"],chats:["#chatsView","#navChats"]};
+function setView(v){
+  S.view=v;
+  Object.keys(VIEWS).forEach(k=>{$(VIEWS[k][0]).hidden=k!==v;const b=$(VIEWS[k][1]);if(k===v)b.setAttribute("aria-current","page");else b.removeAttribute("aria-current");});
+  window.scrollTo(0,0);if(v==="me")renderMe(true);render();
+}
+let zTop=20;
+function openSheet(id){$(id).style.zIndex=++zTop;$(id).classList.add("open");document.body.style.overflow="hidden";}
+function closeSheet(id){
+  $(id).classList.remove("open");if(!document.querySelector(".sheet.open"))document.body.style.overflow="";
+  if(id==="#detailSheet")S.openId=null;
+  if(id==="#chatSheet"){if(S.msgUnsub){S.msgUnsub();S.msgUnsub=null;}S.chat=null;S.msgs=[];}
+}
+
+/* ---------- chat ---------- */
+const sid=s=>String(s||"").replace(/[^A-Za-z0-9_\-.~:@+]/g,"_").slice(0,150)||"x";
+function myRead(t){return (t.readAt&&S.uid&&t.readAt[sid(S.uid)])||0;}
+function isUnread(t){return !!(S.uid&&t.lastFrom&&t.lastFrom!==S.uid&&(t.lastAt||0)>myRead(t));}
+function otherName(t){return S.uid===t.sellerId?(t.buyerName||"買家"):(t.sellerName||"賣家");}
+function hm(ms){const d=new Date(ms);return String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0");}
+function dayKey(ms){const d=new Date(ms);return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate();}
+function dayText(ms){const d=new Date(ms),n=new Date();if(dayKey(ms)===dayKey(n.getTime()))return"今天";if(dayKey(ms)===dayKey(n.getTime()-86400000))return"昨天";return (d.getMonth()+1)+"月"+d.getDate()+"日";}
+function renderBadge(){
+  const n=S.threads.filter(isUnread).length;const b=$("#chatBadge");
+  b.hidden=!n;b.textContent=n>9?"9+":String(n);
+  $("#navChats").setAttribute("aria-label",n?"訊息，"+n+" 則未讀":"訊息");
+}
+function threadThumb(t){
+  const l=S.listings.find(x=>x.id===t.listingId);
+  return thumbHTML(l||{cat:t.cat});
+}
+function renderChats(){
+  const v=$("#chatsView");
+  const arr=S.threads.slice().sort((a,b)=>(b.lastAt||0)-(a.lastAt||0));
+  let h='<div class="me"><h2>訊息</h2><p class="privacy">只有你和對方看得到對話。提醒你：先到現場看過貨再付款，不要先匯款。</p></div>';
+  if(!S.uid){h+='<div style="padding:0 16px"><div class="empty"><b>登入後就能傳訊息</b><button type="button" class="btn primary" data-login style="margin-top:10px">登入或註冊</button></div></div>';}
+  else if(!arr.length){h+='<div style="padding:0 16px"><div class="empty"><b>還沒有對話</b>在材料頁面按「傳訊息」，就能直接問刊登的人。</div></div>';}
+  else h+='<div class="threads">'+arr.map(t=>{
+    const l=S.listings.find(x=>x.id===t.listingId);const role=S.uid===t.sellerId?"你的刊登":"你詢問的";
+    return '<button type="button" class="thread'+(isUnread(t)?" unread":"")+'" data-thread="'+esc(t.id)+'">'+threadThumb(t)+
+      '<div class="t-min"><span class="t-name">'+esc(otherName(t))+'</span><span class="t-item">'+role+'：'+esc(l?l.title:(t.title||"已刪除的刊登"))+'</span><span class="t-last">'+(t.lastFrom===S.uid?"你：":"")+esc(t.lastText||"")+'</span></div>'+
+      '<div class="t-meta"><span>'+esc(timeAgo(t.lastAt))+'</span>'+(isUnread(t)?'<span class="dot" aria-label="未讀"></span>':'')+'</div></button>';
+  }).join("")+'</div>';
+  v.innerHTML=h;
+}
+function chatFromThread(t){return{tid:t.id,listingId:t.listingId,sellerId:t.sellerId,buyerId:t.buyerId,sellerName:t.sellerName||"",buyerName:t.buyerName||"",title:t.title||"",cat:t.cat||"other"};}
+function chatForListing(l){
+  if(!S.db){toast("沒有連上資料庫，現在不能傳訊息");return;}
+  if(!S.uid){openLogin("登入後就能傳訊息給刊登的人。",()=>chatForListing(l));return;}
+  if(l.sample){toast("範例刊登沒有真的賣家，不能傳訊息");return;}
+  if(l.ownerId===S.uid){toast("這是你自己的刊登");return;}
+  const tid=sid(l.id)+"~"+sid(S.uid);
+  const t=S.threads.find(x=>x.id===tid);
+  openChat(t?chatFromThread(t):{tid,listingId:l.id,sellerId:l.ownerId,buyerId:S.uid,sellerName:l.contactName||"",buyerName:S.me.name||"",title:l.title,cat:l.cat});
+}
+function openChat(c){
+  if(S.msgUnsub){S.msgUnsub();S.msgUnsub=null;}
+  S.chat=c;S.msgs=[];renderChatHead();renderMsgs(true);openSheet("#chatSheet");
+  const iAmBuyer=S.uid===c.buyerId;
+  const q=iAmBuyer?["還有嗎？","可以去現場看嗎？","什麼時候方便載？","價格可以再談嗎？"]:["還有喔","已經被預約了","明天下午可以來載","可以，算你便宜一點"];
+  $("#cQuick").innerHTML=q.map(x=>'<button type="button" class="chip" data-quick="'+esc(x)+'">'+esc(x)+'</button>').join("");
+  try{
+    S.msgUnsub=S.db.collection("chats/"+c.tid+"/msgs").orderBy("at","asc").limit(500).onSnapshot(snap=>{
+      if(!S.chat||S.chat.tid!==c.tid)return;
+      S.msgs=snap.docs.map(d=>d.data());renderMsgs(false);markRead();
+    },()=>{toast("訊息載入失敗，請關掉再打開");});
+  }catch(e){toast("訊息載入失敗");}
+}
+function renderChatHead(){
+  const c=S.chat;if(!c)return;
+  const t=S.threads.find(x=>x.id===c.tid);if(t)Object.assign(c,chatFromThread(t));
+  const l=S.listings.find(x=>x.id===c.listingId);
+  const name=S.uid===c.sellerId?(c.buyerName||"買家"):(c.sellerName||"賣家");
+  $("#cHead").textContent=name;
+  const st=l?(STATUS[l.status]||STATUS.open):null;
+  $("#cItem").innerHTML='<button type="button" class="chat-item" '+(l?'data-item="'+esc(l.id)+'"':'disabled')+'>'+thumbHTML(l||{cat:c.cat})+
+    '<div class="t-min"><span class="t-name" style="font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(l?l.title:(c.title||"這筆刊登已刪除"))+'</span>'+
+    (l?'<span class="t-item">'+priceHTML(l).replace(/class="price[^"]*"/,'')+' · <span class="pill '+st[1]+'">'+st[0]+'</span></span>':'')+'</div>'+
+    (l?'<span class="go">看材料</span>':'')+'</button>';
+}
+function renderMsgs(reset){
+  const box=$("#cMsgs");const body=$("#cBody");
+  const nearBottom=body.scrollHeight-body.scrollTop-body.clientHeight<120;
+  if(!S.msgs.length){box.innerHTML='<div class="chat-empty">'+(S.uid===(S.chat&&S.chat.buyerId)?"先問問看還有沒有、怎麼載。<br>下面有常用句子可以直接點。":"還沒有訊息。")+'</div>';return;}
+  let last="",h="";
+  S.msgs.forEach(m=>{
+    if(!m||typeof m.text!=="string")return;
+    const k=dayKey(m.at||0);if(k!==last){h+='<div class="day">'+dayText(m.at||0)+'</div>';last=k;}
+    h+='<div class="bub '+(m.from===S.uid?"mine":"them")+'">'+esc(m.text)+'<time>'+hm(m.at||0)+'</time></div>';
+  });
+  box.innerHTML=h;
+  if(reset||nearBottom)body.scrollTop=body.scrollHeight;
+}
+let marking=false;
+async function markRead(){
+  if(!S.chat||marking)return;const t=S.threads.find(x=>x.id===S.chat.tid);if(!t||!isUnread(t))return;
+  marking=true;const rd={};rd[sid(S.uid)]=Date.now();
+  try{await S.db.doc("chats/"+t.id).update({readAt:rd});}catch(e){}
+  marking=false;
+}
+async function sendMsg(text){
+  text=String(text||"").trim().slice(0,500);const c=S.chat;
+  if(!text||!c||S.sending)return;
+  if(!S.uid){openLogin("登入後就能傳訊息。");return;}
+  S.sending=true;$("#cSend").disabled=true;
+  const input=$("#cInput");const prev=input.value;input.value="";
+  const now=Date.now();const rd={};rd[sid(S.uid)]=now;
+  const exists=S.threads.some(x=>x.id===c.tid);
+  const ok=await write(async()=>{
+    if(!exists){
+      await S.db.doc("chats/"+c.tid).set({listingId:c.listingId,title:c.title||"",cat:c.cat||"other",sellerId:c.sellerId,buyerId:c.buyerId,members:[c.sellerId,c.buyerId],
+        sellerName:c.sellerName||"",buyerName:S.me.name||c.buyerName||"",createdAt:now,lastText:text,lastAt:now,lastFrom:S.uid,readAt:rd});
+    }
+    await S.db.collection("chats/"+c.tid+"/msgs").add({from:S.uid,text,at:now});
+    if(exists){
+      const up={lastText:text,lastAt:now,lastFrom:S.uid,readAt:rd};
+      if(S.uid===c.buyerId&&S.me.name)up.buyerName=S.me.name;
+      await S.db.doc("chats/"+c.tid).update(up);
+    }
+  });
+  if(!ok&&!input.value)input.value=prev;
+  S.sending=false;$("#cSend").disabled=false;input.focus();
+}
+$("#cForm").addEventListener("submit",e=>{e.preventDefault();sendMsg($("#cInput").value);});
+$("#cQuick").addEventListener("click",e=>{const b=e.target.closest("[data-quick]");if(b)sendMsg(b.getAttribute("data-quick"));});
+$("#cItem").addEventListener("click",e=>{const b=e.target.closest("[data-item]");if(b)openDetail(b.getAttribute("data-item"));});
+$("#chatsView").addEventListener("click",e=>{const b=e.target.closest("[data-thread]");if(!b)return;const t=S.threads.find(x=>x.id===b.getAttribute("data-thread"));if(t)openChat(chatFromThread(t));});
+document.querySelectorAll(".sheet").forEach(s=>{
+  s.addEventListener("click",e=>{if(e.target.closest("[data-close]"))closeSheet("#"+s.id);});
+});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"){const o=[...document.querySelectorAll(".sheet.open")].pop();if(o)closeSheet("#"+o.id);}});
+
+/* ---------- detail ---------- */
+async function openDetail(id){
+  const l=S.listings.find(x=>x.id===id);if(!l)return;
+  S.openId=id;openSheet("#detailSheet");$("#detailSheet .panel-body").scrollTop=0;
+  const c=CATMAP[l.cat]||CATMAP.other;const th=safeImg(l.thumb);
+  $("#dPhotos").innerHTML='<div class="g-count"><div class="gallery" id="gal">'+(th?'<div><img alt="'+esc(l.title)+'" src="'+esc(th)+'"></div>':'<div><span class="glyph" aria-hidden="true">'+esc(c.g)+'</span></div>')+'</div>'+(l.photoCount>1?'<span class="g-badge">'+l.photoCount+' 張，左右滑</span>':'')+'</div>';
+  renderDetailBody();
+  if(S.db&&l.photoCount>0){
+    try{
+      const imgs=[];
+      for(let i=0;i<Math.min(4,l.photoCount);i++){const s=await S.db.doc("photos/"+id+"-"+i).get();if(s.exists){const src=safeImg((s.data()||{}).img);if(src)imgs.push(src);}}
+      if(S.openId===id&&imgs.length)$("#gal").innerHTML=imgs.map(src=>'<div><img alt="'+esc(l.title)+'" src="'+esc(src)+'"></div>').join("");
+    }catch(e){}
+  }
+}
+function renderDetailBody(){
+  const l=S.listings.find(x=>x.id===S.openId);
+  if(!l){$("#dBody").innerHTML='<div class="d-sec"><b>這筆刊登已經刪除了。</b></div>';$("#dFoot").innerHTML="";return;}
+  const c=CATMAP[l.cat]||CATMAP.other;const st=STATUS[l.status]||STATUS.open;const want=l.kind==="want";
+  const mine=S.uid&&l.ownerId===S.uid;const canManage=mine||S.isOwner;
+  const dl=distLabel(l);const d=daysLeft(l.deadline);
+  $("#dHead").textContent=want?"求料":"出料";
+  const pick=(Array.isArray(l.pickup)?l.pickup:[]).map(k=>PICKUP[k]).filter(Boolean);
+  const phone=String(l.phone||"").trim(),line=String(l.line||"").trim();
+  let h='<div class="d-sec"><div class="tags"><span class="cat">'+esc(c.name)+'</span><span class="pill '+st[1]+'">'+st[0]+'</span>'+urgencyPill(l)+(l.sample?'<span class="pill p-sample">範例</span>':'')+'</div>'+
+    '<h3 class="d-title">'+esc(l.title)+'</h3>'+
+    '<div class="d-big"><div class="box"><div class="lbl">'+(want?"需要數量":"剩餘數量")+'</div><div class="val"><span class="num">'+fmtN(l.qty)+'</span> '+esc(l.unit)+'</div></div>'+
+    '<div class="box"><div class="lbl">'+(want?"預算":"價格")+'</div><div class="val">'+priceHTML(l)+'</div></div></div></div>';
+  h+='<div class="d-sec"><dl class="kv">'+
+    (l.spec?'<dt>規格</dt><dd>'+esc(l.spec)+'</dd>':'')+
+    '<dt>地點</dt><dd>'+esc([l.county,l.area].filter(Boolean).join(" "))+(dl?'（'+esc(dl)+'）':'')+'</dd>'+
+    (l.deadline?'<dt>'+(want?"需要日期":"最晚清場")+'</dt><dd>'+esc(mdText(l.deadline))+(d!==null?(d>=0?'，還有 '+d+' 天':'，已過期'):'')+'</dd>':'')+
+    (pick.length?'<dt>'+(want?"取貨":"交貨方式")+'</dt><dd>'+esc(pick.join("、"))+'</dd>':'')+
+    '<dt>刊登</dt><dd>'+esc(timeAgo(l.createdAt))+'</dd></dl>'+
+    (l.desc?'<p class="desc">'+esc(l.desc)+'</p>':'')+'</div>';
+  h+='<div class="d-sec"><div class="sec-h">聯絡 '+esc(l.contactName||"")+'</div>'+
+    (phone?'<div class="contact-row"><span class="v">'+esc(phone)+'</span><a class="btn sm yellow" href="tel:'+esc(phone.replace(/[^\d+]/g,""))+'">撥打</a><button class="btn sm" type="button" data-copy="'+esc(phone)+'">複製</button></div>':'')+
+    (line?'<div class="contact-row"><span style="font-size:13px;color:var(--muted)">LINE</span><span class="v">'+esc(line)+'</span><button class="btn sm" type="button" data-copy="'+esc(line)+'">複製</button></div>':'')+
+    (!phone&&!line?'<span style="color:var(--muted)">刊登者沒有留聯絡方式。</span>':'')+
+    '<span style="font-size:12.5px;color:var(--muted)">接料前請先確認數量、狀況和搬運方式，現場看過再付款。</span></div>';
+  if(canManage){
+    h+='<div class="d-sec"><div class="sec-h">'+(mine?"更新狀態":"管理（你是管理員）")+'</div><div class="statusbar">'+
+      Object.keys(STATUS).map(k=>'<button type="button" data-status="'+k+'" aria-pressed="'+((l.status||"open")===k)+'">'+STATUS[k][0]+'</button>').join("")+'</div></div>';
+  }
+  const opp=S.listings.filter(x=>x.id!==l.id&&x.cat===l.cat&&(x.kind||"offer")!==(l.kind||"offer")&&x.status!=="done")
+    .sort((a,b)=>distScore(a)-distScore(b)).slice(0,3);
+  if(opp.length){h+='<div class="d-sec"><div class="sec-h">'+(want?"可能符合的出料":"有人正在找這類材料")+'</div><div class="match">'+opp.map(cardHTML).join("")+'</div></div>';}
+  $("#dBody").innerHTML=h;
+  const inq=S.threads.filter(t=>t.listingId===l.id).length;
+  $("#dFoot").innerHTML=canManage?'<button class="btn danger" type="button" id="dDel">刪除</button>'+(mine&&inq?'<button class="btn" type="button" id="dInq">詢問 '+inq+'</button>':'')+'<button class="btn primary grow" type="button" id="dEdit">編輯</button>':
+    '<button class="btn primary grow" type="button" id="dChat">'+(S.threads.some(t=>t.listingId===l.id&&t.buyerId===S.uid)?"繼續聊":"傳訊息")+'</button>'+
+    (phone?'<a class="btn yellow" href="tel:'+esc(phone.replace(/[^\d+]/g,""))+'">打電話</a>':line?'<button class="btn yellow" type="button" data-copy="'+esc(line)+'">複製 LINE</button>':'');
+}
+$("#detailSheet").addEventListener("click",async e=>{
+  const cp=e.target.closest("[data-copy]");
+  if(cp){const v=cp.getAttribute("data-copy");try{await navigator.clipboard.writeText(v);toast("已複製："+v);}catch(err){toast("無法自動複製，請長按號碼手動複製");}return;}
+  const op=e.target.closest("[data-open]");if(op){openDetail(op.getAttribute("data-open"));return;}
+  const sb=e.target.closest("[data-status]");if(sb){setStatus(S.openId,sb.getAttribute("data-status"));return;}
+  if(e.target.closest("#dEdit")){openPost(S.openId);return;}
+  if(e.target.closest("#dChat")){const l=S.listings.find(x=>x.id===S.openId);if(l)chatForListing(l);return;}
+  if(e.target.closest("#dInq")){closeSheet("#detailSheet");setView("chats");return;}
+  if(e.target.closest("#dDel")){const id=S.openId;if(await confirmBox("確定要刪除這筆刊登嗎？刪掉就找不回來了。"))delListing(id);return;}
+});
+
+/* ---------- writes ---------- */
+async function write(fn){
+  if(!S.db){toast("沒有連上資料庫，現在不能儲存");return false;}
+  for(let attempt=0;attempt<2;attempt++){
+    try{await fn();return true;}
+    catch(e){
+      const code=e&&e.code;
+      if(code==="unavailable"&&attempt===0){await new Promise(r=>setTimeout(r,500+Math.random()*700));continue;}
+      if(code==="permission_denied"){toast(S.uid?"沒有權限做這件事":"請先登入");if(!S.uid)openLogin("請先登入。");}
+      else if(code==="invalid_argument")toast("資料格式不對，或照片太大，請換一張再試");
+      else if(code==="quota_exceeded")toast("資料庫空間滿了，請刪掉一些舊刊登");
+      else if(code==="resource_exhausted")toast("操作太頻繁，請稍等一下再試");
+      else toast("儲存失敗，請稍後再試");
+      return false;
+    }
+  }
+  return false;
+}
+async function setStatus(id,st){
+  const l=S.listings.find(x=>x.id===id);if(!l||l.status===st)return;
+  if(await write(()=>S.db.doc("listings/"+id).update({status:st,updatedAt:Date.now()})))toast("狀態改為「"+STATUS[st][0]+"」");
+}
+async function delListing(id){
+  const l=S.listings.find(x=>x.id===id);
+  const ok=await write(async()=>{await S.db.doc("listings/"+id).delete();});
+  if(ok){
+    for(let i=0;i<4;i++){try{await S.db.doc("photos/"+id+"-"+i).delete();}catch(e){}}
+    closeSheet("#detailSheet");toast("已刪除");
+  }
+}
+
+/* ---------- image compression ---------- */
+function loadImage(file){return new Promise((res,rej)=>{const u=URL.createObjectURL(file);const im=new Image();im.onload=()=>{res(im);};im.onerror=()=>{URL.revokeObjectURL(u);rej(new Error("bad"));};im.src=u;});}
+function draw(im,max,q){const r=Math.min(1,max/Math.max(im.naturalWidth,im.naturalHeight));const w=Math.round(im.naturalWidth*r),h=Math.round(im.naturalHeight*r);const cv=document.createElement("canvas");cv.width=w;cv.height=h;const cx=cv.getContext("2d");cx.fillStyle="#fff";cx.fillRect(0,0,w,h);cx.drawImage(im,0,0,w,h);return cv.toDataURL("image/jpeg",q);}
+async function compress(file){
+  const im=await loadImage(file);
+  let max=1280,q=.72,full=draw(im,max,q);
+  while(full.length>200000&&(q>.4||max>640)){if(q>.45)q-=.1;else max=Math.round(max*.8);full=draw(im,max,q);}
+  let thumb=draw(im,280,.55);if(thumb.length>26000)thumb=draw(im,220,.5);
+  return {full,thumb};
+}
+
+/* ---------- post form ---------- */
+function blank(){return{kind:S.kind,cat:S.cat!=="all"?S.cat:"",title:"",qty:"",unit:"箱",spec:"",desc:"",priceMode:"free",price:"",county:S.me.county||"",area:S.me.area||"",deadline:"",pickup:["self"],contactName:S.me.name||"",phone:S.me.phone||"",line:S.me.line||""};}
+function openPost(editId){
+  if(!S.db){toast(S.loadErr?"沒有連上資料庫，現在不能刊登":"還在連線，請稍等一下");return;}
+  if(!S.uid){openLogin("登入後就能刊登材料。",()=>openPost(editId));return;}
+  S.editId=editId||null;S.newPhotos=null;
+  const l=editId?Object.assign(blank(),S.listings.find(x=>x.id===editId)):blank();
+  S.keepPhotoCount=editId?(l.photoCount||0):0;
+  $("#pHead").textContent=editId?"編輯刊登":"刊登材料";$("#postSubmit").textContent=editId?"儲存修改":"刊登";
+  const f=$("#postForm");
+  const radio=(name,val,label,cur)=>'<label><input type="radio" name="'+name+'" value="'+val+'"'+(cur===val?" checked":"")+'><span>'+label+'</span></label>';
+  f.innerHTML=
+   '<div class="field"><span class="lbl">你要</span><div class="kind-pick">'+
+    '<label><input type="radio" name="kind" value="offer"'+(l.kind!=="want"?" checked":"")+'><span><b>出料</b><small>工地多出來，想送走或便宜賣</small></span></label>'+
+    '<label><input type="radio" name="kind" value="want"'+(l.kind==="want"?" checked":"")+'><span><b>求料</b><small>我需要一點，想撿便宜</small></span></label></div></div>'+
+   '<div class="field"><span class="lbl">分類<span class="req">*</span></span><div class="radios">'+CATS.map(c=>radio("cat",c.id,c.name,l.cat)).join("")+'</div></div>'+
+   '<div class="field"><label for="fTitle">品名<span class="req">*</span></label><input class="inp" id="fTitle" maxlength="60" value="'+esc(l.title)+'" placeholder="例：60×60 霧面石英磚 淺灰"></div>'+
+   '<div class="field"><span class="lbl">數量<span class="req">*</span></span><div class="row-qty"><input class="inp num" id="fQty" inputmode="decimal" value="'+esc(l.qty)+'" placeholder="例：35" aria-label="數量"><select class="inp" id="fUnit" aria-label="單位">'+UNITS.map(u=>'<option'+(u===l.unit?" selected":"")+'>'+u+'</option>').join("")+'</select></div></div>'+
+   '<div class="field"><label for="fSpec">規格 <span class="hint">尺寸、色號、品牌、厚度</span></label><input class="inp" id="fSpec" maxlength="80" value="'+esc(l.spec)+'" placeholder="例：冠軍 60×60cm 色號 G6012，同批號"></div>'+
+   '<div class="field"><label for="fDesc">說明</label><textarea class="inp" id="fDesc" maxlength="800" placeholder="例：浴室翻修多叫的，原箱未拆，放在一樓車庫。">'+esc(l.desc)+'</textarea></div>'+
+   '<div class="field"><span class="lbl">價格</span><div class="radios" id="fPriceMode">'+radio("pm","free","免費","")+radio("pm","lot","整批價","")+radio("pm","unit","單價","")+radio("pm","ask","可議","")+'</div>'+
+    '<input class="inp num" id="fPrice" inputmode="numeric" placeholder="金額（新台幣）" value="'+esc(l.price)+'" aria-label="金額"></div>'+
+   '<div class="field"><span class="lbl">地點<span class="req">*</span> <span class="hint">寫到區或路段就好，不用門牌</span></span><div class="row2"><select class="inp" id="fCounty" aria-label="縣市"><option value="">選縣市</option>'+COUNTIES.map(c=>'<option'+(c[0]===l.county?" selected":"")+'>'+c[0]+'</option>').join("")+'</select><input class="inp" id="fArea" maxlength="30" value="'+esc(l.area)+'" placeholder="例：西屯區" aria-label="鄉鎮區"></div></div>'+
+   '<div class="field"><label for="fDeadline" id="fDeadlineLbl">最晚清場日</label><input class="inp" type="date" id="fDeadline" value="'+esc(l.deadline)+'"></div>'+
+   '<div class="field"><span class="lbl" id="fPickLbl">交貨方式</span><div class="radios">'+Object.keys(PICKUP).map(k=>'<label><input type="checkbox" name="pickup" value="'+k+'"'+((l.pickup||[]).indexOf(k)>=0?" checked":"")+'><span>'+PICKUP[k]+'</span></label>').join("")+'</div></div>'+
+   '<div class="field"><span class="lbl">照片 <span class="hint">最多 4 張，第一張當封面</span></span><div class="photos" id="fPhotos"></div><input type="file" id="fFile" accept="image/*" multiple hidden></div>'+
+   '<div class="field"><span class="lbl">聯絡方式<span class="req">*</span> <span class="hint">電話或 LINE 至少填一個</span></span>'+
+    '<input class="inp" id="fName" maxlength="30" value="'+esc(l.contactName)+'" placeholder="聯絡人／公司" aria-label="聯絡人">'+
+    '<div class="row2"><input class="inp" id="fPhone" inputmode="tel" maxlength="20" value="'+esc(l.phone)+'" placeholder="電話" aria-label="電話"><input class="inp" id="fLine" maxlength="30" value="'+esc(l.line)+'" placeholder="LINE ID" aria-label="LINE ID"></div>'+
+    '<label class="check"><input type="checkbox" id="fRemember" checked> 記住我的聯絡方式和位置</label></div>'+
+   '<div class="err-msg" id="fErr" role="alert"></div>';
+  const pm=f.querySelector('input[name="pm"][value="'+(l.priceMode||"free")+'"]');if(pm)pm.checked=true;
+  syncForm();renderPhotos();
+  openSheet("#postSheet");$("#postSheet .panel-body").scrollTop=0;
+}
+function syncForm(){
+  const f=$("#postForm");const kind=(f.querySelector('input[name="kind"]:checked')||{}).value;
+  const pm=(f.querySelector('input[name="pm"]:checked')||{}).value;
+  const want=kind==="want";
+  $("#fDeadlineLbl").textContent=want?"什麼時候需要":"最晚清場日";
+  $("#fPickLbl").textContent=want?"可以怎麼取貨":"交貨方式";
+  const pr=$("#fPrice");pr.hidden=!(pm==="lot"||pm==="unit");
+  pr.placeholder=pm==="unit"?"每單位多少錢":"整批多少錢";
+}
+function renderPhotos(){
+  const box=$("#fPhotos");if(!box)return;
+  let h="";
+  if(S.newPhotos){h=S.newPhotos.map((p,i)=>'<div class="ph"><img alt="照片 '+(i+1)+'" src="'+esc(p.thumb)+'"><button type="button" data-rmph="'+i+'" aria-label="移除照片">×</button></div>').join("");}
+  else if(S.keepPhotoCount){const l=S.listings.find(x=>x.id===S.editId);const th=l&&safeImg(l.thumb);h='<div class="ph">'+(th?'<img alt="目前封面" src="'+esc(th)+'">':'')+'</div><div class="add" style="cursor:default;border-style:solid">已有 '+S.keepPhotoCount+' 張<br>重選會取代</div>';}
+  const count=S.newPhotos?S.newPhotos.length:0;
+  if(count<4)h+='<label class="add" for="fFile">＋<br>加照片</label>';
+  box.innerHTML=h;
+}
+$("#postForm").addEventListener("change",async e=>{
+  if(e.target.name==="kind"||e.target.name==="pm")syncForm();
+  if(e.target.id==="fFile"){
+    const files=[...e.target.files].slice(0,4-(S.newPhotos?S.newPhotos.length:0));e.target.value="";
+    if(!files.length)return;
+    toast("處理照片中…");
+    const out=S.newPhotos?S.newPhotos.slice():[];
+    for(const file of files){try{out.push(await compress(file));}catch(err){toast("有一張照片讀不了，請換一張");}}
+    S.newPhotos=out.slice(0,4);renderPhotos();
+  }
+});
+$("#postForm").addEventListener("click",e=>{const b=e.target.closest("[data-rmph]");if(b){S.newPhotos.splice(Number(b.getAttribute("data-rmph")),1);renderPhotos();}});
+$("#postForm").addEventListener("submit",async e=>{
+  e.preventDefault();
+  const f=$("#postForm");const val=id=>$(id).value.trim();
+  const kind=(f.querySelector('input[name="kind"]:checked')||{}).value||"offer";
+  const cat=(f.querySelector('input[name="cat"]:checked')||{}).value||"";
+  const pm=(f.querySelector('input[name="pm"]:checked')||{}).value||"free";
+  const qty=Number(val("#fQty").replace(/,/g,""));
+  const price=Number(val("#fPrice").replace(/[,$]/g,""));
+  const pickup=[...f.querySelectorAll('input[name="pickup"]:checked')].map(i=>i.value);
+  const data={kind,cat,title:val("#fTitle"),qty,unit:$("#fUnit").value,spec:val("#fSpec"),desc:val("#fDesc"),priceMode:pm,price:(pm==="lot"||pm==="unit")?price:0,
+    county:$("#fCounty").value,area:val("#fArea"),deadline:$("#fDeadline").value||"",pickup,contactName:val("#fName"),phone:val("#fPhone"),line:val("#fLine")};
+  const errs=[];
+  if(!cat)errs.push("選一個分類");if(!data.title)errs.push("填品名");if(!(qty>0))errs.push("填數量");
+  if((pm==="lot"||pm==="unit")&&!(price>=0&&val("#fPrice")))errs.push("填金額");
+  if(!data.county)errs.push("選縣市");if(!data.phone&&!data.line)errs.push("留電話或 LINE");
+  if(errs.length){$("#fErr").textContent="還差：" + errs.join("、");$("#fErr").scrollIntoView({block:"center"});return;}
+  $("#fErr").textContent="";
+  const btn=$("#postSubmit");btn.disabled=true;btn.textContent="上傳中…";
+  const editing=!!S.editId;
+  const ref=editing?S.db.doc("listings/"+S.editId):S.db.collection("listings").doc();
+  const id=ref.id;const old=editing?S.listings.find(x=>x.id===id):null;
+  const ok=await write(async()=>{
+    let photoCount=old?(old.photoCount||0):0,thumb=old?(old.thumb||""):"";
+    if(S.newPhotos){
+      for(let i=0;i<S.newPhotos.length;i++){await S.db.doc("photos/"+id+"-"+i).set({img:S.newPhotos[i].full,listingId:id,ownerId:S.uid});}
+      for(let i=S.newPhotos.length;i<photoCount;i++){try{await S.db.doc("photos/"+id+"-"+i).delete();}catch(e){}}
+      photoCount=S.newPhotos.length;thumb=S.newPhotos[0]?S.newPhotos[0].thumb:"";
+    }
+    const now=Date.now();
+    const body=Object.assign({},data,{photoCount,thumb,updatedAt:now,ownerId:old?old.ownerId:S.uid,status:old?(old.status||"open"):"open",createdAt:old?(old.createdAt||now):now,sample:old?!!old.sample:false});
+    await ref.set(body);
+  });
+  btn.disabled=false;btn.textContent=editing?"儲存修改":"刊登";
+  if(!ok)return;
+  if($("#fRemember").checked){Object.assign(S.me,{name:data.contactName,phone:data.phone,line:data.line,county:data.county,area:data.area});saveProfile(true);}
+  closeSheet("#postSheet");
+  if(!editing){S.kind=kind;S.cat="all";S.q="";$("#q").value="";setView("browse");}
+  toast(editing?"已更新":"刊登成功！");
+  if(editing&&S.openId===id)openDetail(id);
+});
+
+/* ---------- profile ---------- */
+async function saveProfile(silent){
+  lsSet("jieliao.me",S.me);
+  if(S.db&&S.uid){try{await S.db.doc("users/"+S.uid).set(Object.assign({},S.me));}catch(e){}}
+  renderTop();if(!silent)toast("已儲存");
+}
+function openLoc(){
+  const g=$("#countyGrid");S._pickCounty=S.me.county;
+  g.innerHTML=COUNTIES.map(c=>'<button type="button" data-c="'+c[0]+'" aria-pressed="'+(c[0]===S.me.county)+'">'+c[0]+'</button>').join("");
+  $("#locArea").value=S.me.area||"";openSheet("#locSheet");
+}
+$("#countyGrid").addEventListener("click",e=>{const b=e.target.closest("[data-c]");if(!b)return;S._pickCounty=b.getAttribute("data-c");$("#countyGrid").querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",x===b));});
+$("#locSave").addEventListener("click",()=>{if(!S._pickCounty){toast("先選一個縣市");return;}S.me.county=S._pickCounty;S.me.area=$("#locArea").value.trim();closeSheet("#locSheet");saveProfile(true);toast("位置已更新");render();});
+
+/* ---------- events ---------- */
+$("#kindOffer").onclick=()=>{S.kind="offer";render();};
+$("#kindWant").onclick=()=>{S.kind="want";render();};
+$("#chips").addEventListener("click",e=>{const b=e.target.closest("[data-cat]");if(b){S.cat=b.getAttribute("data-cat");render();}});
+let qT;$("#q").addEventListener("input",e=>{clearTimeout(qT);qT=setTimeout(()=>{S.q=e.target.value;renderList();},150);});
+$("#sort").addEventListener("change",e=>{S.sort=e.target.value;if(S.sort==="near"&&!S.me.county){toast("先設定你的工地位置");openLoc();}renderList();});
+$("#freeOnly").addEventListener("change",e=>{S.freeOnly=e.target.checked;renderList();});
+$("#showDone").addEventListener("change",e=>{S.showDone=e.target.checked;renderList();});
+$("#list").addEventListener("click",e=>{const b=e.target.closest("[data-open]");if(b)openDetail(b.getAttribute("data-open"));});
+$("#meView").addEventListener("click",e=>{
+  const b=e.target.closest("[data-open]");if(b){openDetail(b.getAttribute("data-open"));return;}
+  if(e.target.closest("#meLoc")){openLoc();return;}
+  if(e.target.closest("#meSave")){S.me.name=$("#meName").value.trim();S.me.phone=$("#mePhone").value.trim();S.me.line=$("#meLine").value.trim();saveProfile(false);}
+});
+$("#locBtn").onclick=openLoc;
+$("#logoLink").onclick=e=>{e.preventDefault();setView("browse");};
+$("#navBrowse").onclick=()=>setView("browse");
+$("#navMe").onclick=()=>setView("me");
+$("#navChats").onclick=()=>setView("chats");
+$("#navPost").onclick=()=>openPost(null);
+
+/* ---------- boot ---------- */
+const saved=lsGet("jieliao.me");if(saved&&typeof saved==="object")Object.assign(S.me,saved);
+render();
+
+/* ---------- login ---------- */
+const iosStandalone=!!window.navigator.standalone;
+function openLogin(why,after){
+  if(!S.B){toast(S.loadErr||"還在連線，請稍等一下");return;}
+  S._afterLogin=after||null;
+  $("#lgWhy").textContent=why||"登入後就能刊登和傳訊息。只是看材料不用登入。";
+  $("#lgErr").textContent="";
+  $("#lgGoogle").hidden=iosStandalone;$("#lgGoogleNote").hidden=!iosStandalone;
+  openSheet("#loginSheet");
+}
+async function doAuth(fn){
+  const btns=document.querySelectorAll("#lgForm button");btns.forEach(b=>b.disabled=true);$("#lgErr").textContent="";
+  try{await fn();}catch(e){$("#lgErr").textContent=(e&&e.message)||"登入失敗，請再試一次";}
+  btns.forEach(b=>b.disabled=false);
+}
+const lgVals=()=>({email:$("#lgEmail").value.trim(),pw:$("#lgPw").value});
+$("#lgGoogle").onclick=()=>doAuth(()=>S.B.google());
+$("#lgForm").addEventListener("submit",e=>{e.preventDefault();const v=lgVals();if(!v.email||!v.pw){$("#lgErr").textContent="請填 Email 和密碼";return;}doAuth(()=>S.B.emailIn(v.email,v.pw));});
+$("#lgUp").onclick=()=>{const v=lgVals();if(!v.email||v.pw.length<6){$("#lgErr").textContent="請填 Email，密碼至少 6 個字";return;}doAuth(()=>S.B.emailUp(v.email,v.pw));};
+$("#lgReset").onclick=()=>{const v=lgVals();if(!v.email){$("#lgErr").textContent="先在上面填你的 Email，再按忘記密碼";return;}doAuth(async()=>{await S.B.reset(v.email);toast("重設密碼的信已寄到 "+v.email);});};
+document.addEventListener("click",e=>{
+  if(e.target.closest("[data-login]")){openLogin();return;}
+  if(e.target.closest("#meLogout")){confirmBox("確定要登出嗎？").then(ok=>{if(ok&&S.B)S.B.signOut().then(()=>toast("已登出"));});}
+});
+
+function waitBackend(){
+  return new Promise(res=>{
+    if(window.RematBackend)return res(window.RematBackend);
+    window.addEventListener("remat-backend",()=>res(window.RematBackend),{once:true});
+    setTimeout(()=>res(window.RematBackend||null),15000);
+  });
+}
+
+(async function boot(){
+  const B=await waitBackend();
+  if(!B||B.error){
+    S.loading=false;
+    S.loadErr=(B&&B.error==="config")?"網站還沒設定 Firebase：請照上線教學把設定貼進 config.js。":"連不上資料庫，請檢查網路後重新整理頁面。";
+    render();return;
+  }
+  S.B=B;S.db=B.db;
+  const timer=setTimeout(()=>{S.stale=true;S.loading=false;render();},10000);
+  S.db.collection("listings").orderBy("createdAt","desc").limit(200).onSnapshot(snap=>{
+    S.listings=snap.docs.map(d=>Object.assign({id:d.id},d.data()));S.loading=false;
+    if(!snap.metadata.fromCache){clearTimeout(timer);S.stale=false;}
+    render();
+  },err=>{
+    clearTimeout(timer);S.loading=false;
+    S.loadErr=(err&&err.code==="permission_denied")?"資料庫規則還沒設定好：請照上線教學貼上 Firestore 規則。":"資料載入失敗，請重新整理頁面。";render();
+  });
+  let threadUnsub=null;
+  B.onAuth(async u=>{
+    if(threadUnsub){threadUnsub();threadUnsub=null;}
+    S.authUser=u;S.uid=u?u.uid:null;S.threads=[];S.isOwner=false;S.canWrite=u?true:null;S.ready=true;
+    if(u){
+      S.isOwner=await B.isAdmin(u.uid);
+      try{const p=await S.db.doc("users/"+u.uid).get();if(p.exists){const d=p.data()||{};["name","phone","line","county","area"].forEach(k=>{if(typeof d[k]==="string"&&d[k])S.me[k]=d[k];});lsSet("jieliao.me",S.me);}else if(!S.me.name&&u.name){S.me.name=u.name;}}catch(e){}
+      try{
+        threadUnsub=S.db.collection("chats").where("members","array-contains",u.uid).limit(500).onSnapshot(snap=>{
+          S.threads=snap.docs.map(d=>Object.assign({id:d.id},d.data()));render();if(S.chat)markRead();
+        },()=>{});
+      }catch(e){}
+      if(document.querySelector("#loginSheet.open")){closeSheet("#loginSheet");toast("登入成功");}
+      if(S._afterLogin){const f=S._afterLogin;S._afterLogin=null;setTimeout(f,50);}
+    }else if(S.chat){closeSheet("#chatSheet");}
+    if(S.view==="me")renderMe(true);
+    render();
+  });
+})();
+})();
+</script>
+</body>
+</html>

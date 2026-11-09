@@ -1,0 +1,80 @@
+rules_version = '2';
+
+// 接好料 ReMat 的資料庫規則
+// 誰可以看、誰可以改，全部由這份規則決定。整份貼到 Firebase → Firestore → 規則。
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() { return request.auth != null; }
+    function me() { return request.auth.uid; }
+    function isAdmin() {
+      return signedIn() && exists(/databases/$(database)/documents/admins/$(me()));
+    }
+    function okListing(d) {
+      return d.kind in ['offer', 'want']
+        && d.status in ['open', 'hold', 'done']
+        && d.title is string && d.title.size() > 0 && d.title.size() <= 60
+        && d.qty is number && d.qty > 0
+        && d.desc is string && d.desc.size() <= 800
+        && d.thumb is string && d.thumb.size() <= 60000
+        && d.ownerId is string;
+    }
+
+    // 刊登：所有人都能看；登入的人可以刊登；只有刊登者（或管理員）能改、能刪
+    match /listings/{id} {
+      allow read: if true;
+      allow create: if signedIn() && request.resource.data.ownerId == me() && okListing(request.resource.data);
+      allow update: if (signedIn() && resource.data.ownerId == me()
+                        && request.resource.data.ownerId == me() && okListing(request.resource.data))
+                    || (isAdmin() && okListing(request.resource.data));
+      allow delete: if (signedIn() && resource.data.ownerId == me()) || isAdmin();
+    }
+
+    // 照片
+    match /photos/{id} {
+      allow read: if true;
+      allow create: if signedIn() && request.resource.data.ownerId == me()
+                    && request.resource.data.img is string && request.resource.data.img.size() < 900000;
+      allow update: if ((signedIn() && resource.data.ownerId == me()) || isAdmin())
+                    && request.resource.data.img is string && request.resource.data.img.size() < 900000;
+      allow delete: if (signedIn() && resource.data.ownerId == me()) || isAdmin();
+    }
+
+    // 個人聯絡資料：只有自己看得到
+    match /users/{uid} {
+      allow read, write: if signedIn() && me() == uid;
+    }
+
+    // 管理員名單：只能在 Firebase 主控台手動新增
+    match /admins/{uid} {
+      allow read: if signedIn() && me() == uid;
+      allow write: if false;
+    }
+
+    // 聊天：只有買家和賣家兩個人看得到
+    match /chats/{tid} {
+      allow read: if signedIn() && me() in resource.data.members;
+      allow create: if signedIn()
+        && request.resource.data.buyerId == me()
+        && request.resource.data.sellerId != me()
+        && request.resource.data.members == [request.resource.data.sellerId, me()]
+        && tid == request.resource.data.listingId + '~' + me()
+        && get(/databases/$(database)/documents/listings/$(request.resource.data.listingId)).data.ownerId == request.resource.data.sellerId;
+      allow update: if signedIn() && me() in resource.data.members
+        && request.resource.data.members == resource.data.members
+        && request.resource.data.sellerId == resource.data.sellerId
+        && request.resource.data.buyerId == resource.data.buyerId
+        && request.resource.data.listingId == resource.data.listingId;
+
+      match /msgs/{mid} {
+        allow read: if signedIn()
+          && me() in get(/databases/$(database)/documents/chats/$(tid)).data.members;
+        allow create: if signedIn()
+          && request.resource.data.from == me()
+          && request.resource.data.text is string
+          && request.resource.data.text.size() > 0 && request.resource.data.text.size() <= 500
+          && me() in get(/databases/$(database)/documents/chats/$(tid)).data.members;
+      }
+    }
+  }
+}
