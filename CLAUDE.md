@@ -41,7 +41,7 @@ A marketplace for leftover construction materials in Taiwan. Sites with surplus 
   - `ownerId`, `status`: `open`|`hold`|`done`
   - `createdAt`, `updatedAt` (ms)
 - `photos/{listingId}-{i}`: `{img, listingId, ownerId}`. Full-size photos are compressed JPEG data URLs under about 200 KB, at most 4 per listing.
-- `users/{uid}`: the private contact profile (`name, phone, line, county, area`).
+- `users/{uid}`: the private contact profile (`name, phone, line, county, area`) plus `favs` (array of listing ids, newest first, max 300). It is written with `set()`, which replaces the whole doc, so always write it via `userDoc()`. Logged-out favorites live in localStorage `jieliao.favs` and merge into the account on login.
 - `admins/{uid}`: if this doc exists, the user is an admin. Admins are added by hand in the console only.
 - `chats/{listingId}~{buyerUid}`: `{listingId, title, cat, sellerId, buyerId, members:[sellerId,buyerId], sellerName, buyerName, lastText, lastAt, lastFrom, readAt:{uid:ms}}`
 - `chats/{tid}/msgs/{id}`: `{from, text (≤500), at}`
