@@ -49,18 +49,20 @@ button{cursor:pointer}
 /* header */
 .top{position:sticky;top:0;z-index:5;background:var(--hazard);color:var(--ink);border-bottom:1px solid rgba(27,28,30,.14)}
 .top-in{display:flex;align-items:center;gap:12px;padding:12px 16px;min-height:68px;box-sizing:border-box}
-.logo-wrap{display:flex;align-items:center;gap:12px;text-decoration:none;color:var(--ink);min-width:0}
+.logo-wrap{display:flex;align-items:center;gap:12px;text-decoration:none;color:var(--ink);flex:none}
 .logo-icon{flex:none;display:block}
 /* 圖示 44px = 文字區塊 44px（24 + 4 + 16），上下緣對齊 */
 .logo{display:flex;flex-direction:column;justify-content:space-between;align-items:flex-start;height:44px;text-decoration:none;color:var(--ink);min-width:0}
 .logo-mark{font-weight:900;font-size:22px;line-height:24px;letter-spacing:.05em;flex:none}
-.logo-row{display:flex;align-items:baseline;gap:8px;height:24px}
-/* ReMat 上移 7px：大寫字頂對齊「接好料」字頂（實測兩者頂端同在 y=15.25） */
-.logo-en{font-family:var(--display);font-weight:800;font-size:17px;line-height:24px;letter-spacing:.04em;color:#4A3F12;position:relative;top:-7px}
+.logo-row{display:flex;align-items:flex-start;gap:8px;height:24px}
+/* ReMat 大寫字高 = 「接好料」字高：實測兩者墨色上緣 y=15.25、下緣 y=36，上下都對齊 */
+.logo-en{font-family:var(--display);font-weight:800;font-size:29.5px;line-height:24px;letter-spacing:.04em;color:#4A3F12;transform:translateY(-.25px)}
 .logo-sub{font-size:13.5px;color:#4A3F12;line-height:16px;white-space:nowrap;align-self:stretch;text-align:justify;text-align-last:justify;text-justify:inter-character}
-.loc-pill{margin-left:auto;display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.72);border:1px solid rgba(27,28,30,.16);color:var(--ink);border-radius:999px;height:36px;padding:0 12px;font-size:14px;line-height:1;max-width:50%;flex:none;box-sizing:border-box}
+.loc-pill{margin-left:auto;display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.72);border:1px solid rgba(27,28,30,.16);color:var(--ink);border-radius:999px;height:36px;padding:0 12px;font-size:14px;line-height:1;flex:0 1 auto;min-width:36px;box-sizing:border-box}
 .loc-pill svg{color:var(--warn);flex:none}
 .loc-pill span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* 很窄的手機放不下文字：位置鈕只留圖示，不擠到標題 */
+@media (max-width:359px){.loc-pill{width:36px;padding:0;justify-content:center}.loc-pill span{display:none}}
 
 .stats{display:flex;flex-wrap:wrap;gap:4px 16px;padding:10px 16px 0;font-size:13px;color:var(--muted)}
 .stats span{white-space:nowrap}
