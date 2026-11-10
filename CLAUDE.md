@@ -64,7 +64,7 @@ If you change any field, update `firestore.rules` to match (`okListing()` valida
   - Status colors: go `#1E7F47`, hold `#2C64C4`, warn `#D4470E`
 - **Fonts:** Noto Sans TC for UI and names; Barlow Condensed for numbers and "ReMat".
 - **Logo (B6 "材料堆疊"):** two yellow loop arrows around a pile of three white blocks, on a dark rounded square. The inline SVG is in the header. Keep the blocks optically centered at `y=37.5` and `y=49.5`.
-- **Header:** yellow. Icon 44px with the text block exactly 44px tall (`接好料` + `ReMat` on one line, then `工地剩料，就近接手` justified to the same width).
+- **Header:** yellow. Icon 44px with the text block exactly 44px tall (`接好料` + `ReMat` on one line, then `工地剩料，就近接手` justified to the same width). `ReMat` is shifted up 7px so the top of its capitals lines up with the top of `接好料`.
 - **Layout breakpoints:**
   - **Phone (<768px):** one column. Bottom nav in this order: **找料 · 訊息 · 刊登 (raised yellow, center) · 關於 · 我的**.
   - **≥768px (iPad):** nav moves into the header (`.topnav`), listings become a card grid, and sheets become centered modals.
