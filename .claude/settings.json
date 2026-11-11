@@ -1,13 +1,20 @@
 {
+  "enabledPlugins": {
+    "firebase@firebase": true,
+    "marketing-skills@marketingskills": true
+  },
   "extraKnownMarketplaces": {
     "firebase": {
       "source": {
         "source": "github",
         "repo": "firebase/agent-skills"
       }
+    },
+    "marketingskills": {
+      "source": {
+        "source": "github",
+        "repo": "coreyhaines31/marketingskills"
+      }
     }
-  },
-  "enabledPlugins": {
-    "firebase@firebase": true
   }
 }
