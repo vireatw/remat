@@ -2,7 +2,7 @@
 <html lang="zh-Hant-TW">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>接好料 ReMat</title>
 <meta name="description" content="工地剩料，就近接手。磁磚、木料、鋼筋、水泥，多出來的材料刊上來，附近需要的人直接來接。">
 <meta name="theme-color" content="#FFC21A">
@@ -17,10 +17,29 @@
 <meta property="og:title" content="接好料 ReMat">
 <meta property="og:description" content="工地剩料，就近接手。多出來的材料刊上來，附近需要的人直接來接。">
 <meta property="og:url" content="https://remat.tw/">
-<meta property="og:image" content="https://remat.tw/icon-512.png">
+<meta property="og:site_name" content="接好料 ReMat">
+<meta property="og:locale" content="zh_TW">
+<meta property="og:image" content="https://remat.tw/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="接好料 ReMat：工地剩料，就近接手">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://remat.tw/og.png">
+<link rel="canonical" href="https://remat.tw/">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@graph":[
+ {"@type":"WebSite","name":"接好料 ReMat","alternateName":"接好料","url":"https://remat.tw/","inLanguage":"zh-Hant-TW","description":"工地剩料，就近接手。磁磚、木料、鋼筋、水泥，多出來的材料刊上來，附近需要的人直接來接。"},
+ {"@type":"Organization","name":"接好料 ReMat","url":"https://remat.tw/","logo":"https://remat.tw/icon-512.png","email":"virea.tw@gmail.com"}
+]}
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<!-- 字型：內文用手機內建中文字型（不用下載）；只有標題 LOGO 的 12 個字下載 Noto Sans TC，數字用 Barlow Condensed -->
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;900&text=%E6%8E%A5%E5%A5%BD%E6%96%99%E5%B7%A5%E5%9C%B0%E5%89%A9%E6%96%99%EF%BC%8C%E5%B0%B1%E8%BF%91%E6%8E%A5%E6%89%8B&display=swap" rel="stylesheet">
+<link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js">
+<link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js">
+<link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js">
 <style>
 :root{
   /* 工地現場：水泥灰底、安全黃標示、黑字。單欄手機 App，底部導覽。 */
@@ -34,16 +53,19 @@
   --hold:#2C64C4;
   --warn:#D4470E;
   --warn-text:#B33A08; /* 紅橘色的字用深一點，戶外陽光下也看得清楚 */
-  --display:"Barlow Condensed","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
-  --body:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  --display:"Barlow Condensed","PingFang TC","Microsoft JhengHei","Noto Sans CJK TC",sans-serif;
+  --body:"PingFang TC","Microsoft JhengHei","Noto Sans CJK TC","Noto Sans TC",system-ui,sans-serif;
+  --logo:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
   color-scheme:light;
 }
 *{box-sizing:border-box}
 html,body{height:100%;margin:0}
-body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+body{padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right);background:var(--paper);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
 button,input,select,textarea{font:inherit;color:inherit}
 button{cursor:pointer}
 :focus-visible{outline:3px solid var(--hold);outline-offset:2px}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+.panel-head .icon-btn+.icon-btn{margin-left:-4px}
 .app{max-width:520px;margin:0 auto;min-height:100%;padding-bottom:96px;background:var(--paper)}
 .num{font-family:var(--display);font-variant-numeric:tabular-nums;letter-spacing:.01em}
 
@@ -53,12 +75,13 @@ button{cursor:pointer}
 .logo-wrap{display:flex;align-items:center;gap:12px;text-decoration:none;color:var(--ink);flex:none}
 .logo-icon{flex:none;display:block}
 /* 圖示 44px = 文字區塊 44px（24 + 4 + 16），上下緣對齊 */
-.logo{display:flex;flex-direction:column;justify-content:space-between;align-items:flex-start;height:44px;text-decoration:none;color:var(--ink);min-width:0}
-.logo-mark{font-weight:900;font-size:22px;line-height:24px;letter-spacing:.05em;flex:none}
+.logo{font-family:var(--logo);display:flex;flex-direction:column;justify-content:space-between;align-items:flex-start;height:44px;text-decoration:none;color:var(--ink);min-width:0}
+/* LOGO 只下載這幾個字的精簡字型，它的行高位置比完整字型高一點，往下補回（實測：接好料 3px、副標 2px） */
+.logo-mark{font-weight:900;font-size:22px;line-height:24px;letter-spacing:.05em;flex:none;transform:translateY(3px)}
 .logo-row{display:flex;align-items:flex-start;gap:8px;height:24px}
 /* ReMat 大寫字高 = 「接好料」字高：實測兩者墨色上緣 y=15.25、下緣 y=36，上下都對齊 */
 .logo-en{font-family:var(--display);font-weight:800;font-size:29.5px;line-height:24px;letter-spacing:.04em;color:#4A3F12;transform:translateY(-.25px)}
-.logo-sub{font-size:13.5px;color:#4A3F12;line-height:16px;white-space:nowrap;align-self:stretch;text-align:justify;text-align-last:justify;text-justify:inter-character}
+.logo-sub{transform:translateY(2px);font-size:13.5px;color:#4A3F12;line-height:16px;white-space:nowrap;align-self:stretch;text-align:justify;text-align-last:justify;text-justify:inter-character}
 .loc-pill{margin-left:auto;display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.72);border:1px solid rgba(27,28,30,.16);color:var(--ink);border-radius:999px;height:44px;padding:0 14px;font-size:14px;line-height:1;flex:0 1 auto;min-width:36px;box-sizing:border-box}
 .loc-pill svg{color:var(--warn);flex:none}
 .loc-pill span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -128,7 +151,7 @@ button{cursor:pointer}
 
 /* bottom nav */
 .nav{position:fixed;left:0;right:0;bottom:0;z-index:6;background:var(--card);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
-.nav-in{max-width:520px;margin:0 auto;display:grid;grid-template-columns:repeat(5,1fr);gap:2px;align-items:end;padding:6px 8px 8px}
+.nav-in{max-width:520px;margin:0 auto;padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right);display:grid;grid-template-columns:repeat(5,1fr);gap:2px;align-items:end;padding:6px 8px 8px}
 .nav-btn{border:0;background:none;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:12px;color:var(--muted);padding:4px}
 .nav-btn[aria-current="page"]{color:var(--ink);font-weight:700}
 .nav-post{color:var(--ink);font-weight:700}
@@ -249,7 +272,7 @@ textarea.inp{min-height:84px;resize:vertical}
 .county-grid button{border:1.5px solid var(--line);background:var(--card);border-radius:8px;padding:9px 4px;font-size:15px}
 .county-grid button[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
 
-.toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 16px;border-radius:10px;font-size:14px;z-index:40;max-width:90%;display:none}
+.toast{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 16px;border-radius:10px;font-size:14px;z-index:40;max-width:90%;display:none}
 .toast.show{display:block}
 .dialog{position:fixed;inset:0;z-index:30;background:rgba(20,20,22,.5);display:none;place-items:center;padding:24px}
 .dialog.open{display:grid}
@@ -390,6 +413,7 @@ textarea.inp{min-height:84px;resize:vertical}
   </header>
 
   <main id="browseView">
+    <h1 class="sr-only">接好料 ReMat：工地剩料，就近接手</h1>
     <div class="stats" id="stats"></div>
     <div id="notices"></div>
     <div class="browse-grid">
@@ -414,7 +438,8 @@ textarea.inp{min-height:84px;resize:vertical}
     </div>
     </aside>
     <section class="main-col">
-    <div class="list" id="list" aria-live="polite"></div>
+    <div class="list" id="list"></div>
+    <p class="sr-only" id="listStatus" role="status"></p>
     </section>
     </div>
   </main>
@@ -457,6 +482,7 @@ textarea.inp{min-height:84px;resize:vertical}
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
       </button>
       <h2 id="dHead">材料詳情</h2>
+      <button class="icon-btn" type="button" id="dShare" aria-label="分享這筆材料"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V3M7 8l5-5 5 5"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg></button>
       <button class="icon-btn d-fav" type="button" id="dFav" aria-pressed="false" aria-label="收藏"></button>
     </div>
     <div class="panel-body">
@@ -690,6 +716,7 @@ function renderTop(){
   chips.querySelectorAll("[data-cat]").forEach(b=>b.setAttribute("aria-pressed",b.getAttribute("data-cat")===S.cat));
   let n="";
   if(S.loadErr)n+='<div class="notice err">'+esc(S.loadErr)+'</div>';
+  else if(navigator.onLine===false)n+='<div class="notice">現在沒有網路，看到的是上次存下來的資料。</div>';
   else if(S.stale)n+='<div class="notice">資料還在連線中，畫面上的內容可能不是最新的。</div>';
   if(S.ready&&!S.uid&&!S.loadErr&&!S.hideLoginHint)n+='<div class="notice">看材料不用登入。想刊登或傳訊息，<button type="button" class="linkbtn" data-login style="padding:0">按這裡登入</button>。</div>';
   $("#notices").innerHTML=n;
@@ -698,6 +725,7 @@ function renderList(){
   const el=$("#list");
   if(S.loading&&!S.listings.length&&!S.loadErr){el.innerHTML='<div class="skel"></div><div class="skel"></div><div class="skel"></div>';return;}
   const arr=visible();
+  $("#listStatus").textContent=arr.length?"共 "+arr.length+" 筆":"沒有符合條件的材料";
   if(!arr.length){
     const any=S.listings.some(l=>(l.kind||"offer")===S.kind);
     const filtered=S.q.trim()||S.cat!=="all"||S.freeOnly;
@@ -753,7 +781,8 @@ function fetchMissing(ids){
   if(!S.db)return;
   ids.forEach(id=>{
     if(getL(id)||S.fetching[id])return;S.fetching[id]=1;
-    S.db.doc("listings/"+id).get().then(sn=>{if(sn.exists){S.extra[id]=Object.assign({id},sn.data());render();if(S.openId===id)openDetail(id);}}).catch(()=>{});
+    const gone=()=>{if(S.wantOpen===id){S.wantOpen=null;toast("找不到這筆材料，可能已經刪除了");history.replaceState(null,"",location.pathname+location.search);}};
+    S.db.doc("listings/"+id).get().then(sn=>{if(sn.exists){S.extra[id]=Object.assign({id},sn.data());render();if(S.openId===id)openDetail(id);}else gone();}).catch(gone);
   });
 }
 function renderAbout(){
@@ -787,6 +816,7 @@ function render(){
   if(S.view==="browse")renderList();else if(S.view==="me")renderMe();else if(S.view==="chats")renderChats();else renderAbout();
   if(S.openId)renderDetailBody();
   if(S.chat)renderChatHead();
+  if(S.wantOpen&&getL(S.wantOpen)){const id=S.wantOpen;S.wantOpen=null;openDetail(id);}
 }
 
 /* ---------- views ---------- */
@@ -797,11 +827,26 @@ function setView(v){
   Object.keys(VIEWS).forEach(k=>{$(VIEWS[k][0]).hidden=k!==v;const b=$(VIEWS[k][1]);if(k===v)b.setAttribute("aria-current","page");else b.removeAttribute("aria-current");});
   window.scrollTo(0,0);if(v==="me")renderMe(true);render();
 }
-let zTop=20;
-function openSheet(id){$(id).style.zIndex=++zTop;$(id).classList.add("open");document.body.style.overflow="hidden";}
+let zTop=20;const focusBack={};
+// 開視窗時：後面的畫面暫時不能按（螢幕閱讀器也讀不到），焦點移到視窗裡；關掉時焦點回到原本的按鈕
+function setInert(){
+  const open=[...document.querySelectorAll(".sheet.open")].sort((a,b)=>(+a.style.zIndex)-(+b.style.zIndex));
+  const top=open[open.length-1]||null;
+  ["#app",".nav"].forEach(sel=>{const el=document.querySelector(sel);if(el)el.inert=!!top;});
+  document.querySelectorAll(".sheet").forEach(sh=>{sh.inert=!!top&&sh!==top;});
+}
+function openSheet(id){
+  const el=$(id);const fresh=!el.classList.contains("open");
+  if(fresh)focusBack[id]=document.activeElement;
+  el.style.zIndex=++zTop;el.classList.add("open");document.body.style.overflow="hidden";setInert();
+  if(fresh){const f=el.querySelector("[data-close]");if(f)setTimeout(()=>f.focus({preventScroll:true}),0);}
+}
 function closeSheet(id){
   $(id).classList.remove("open");if(!document.querySelector(".sheet.open"))document.body.style.overflow="";
-  if(id==="#detailSheet")S.openId=null;
+  setInert();
+  const back=focusBack[id];delete focusBack[id];
+  if(back&&document.contains(back)&&!back.closest("[inert]")&&back.focus)back.focus({preventScroll:true});
+  if(id==="#detailSheet"){S.openId=null;if(/^#l=/.test(location.hash))history.replaceState(null,"",location.pathname+location.search);}
   if(id==="#chatSheet"){if(S.msgUnsub){S.msgUnsub();S.msgUnsub=null;}S.chat=null;S.msgs=[];}
 }
 
@@ -936,6 +981,7 @@ const photoCache=new Map();
 async function openDetail(id){
   const l=getL(id);if(!l)return;
   S.openId=id;openSheet("#detailSheet");$("#detailSheet .panel-body").scrollTop=0;
+  if(location.hash!=="#l="+id)history.replaceState(null,"","#l="+id); // 每筆材料有自己的網址，可以分享
   const c=CATMAP[l.cat]||CATMAP.other;const th=safeImg(l.thumb);
   $("#dPhotos").innerHTML='<div class="g-count"><div class="gallery'+(!th&&!(l.photoCount>0)?' nophoto':'')+'" id="gal">'+(th?'<div><img alt="'+esc(l.title)+'" src="'+esc(th)+'"></div>':'<div><span class="glyph" aria-hidden="true">'+esc(c.g)+'</span></div>')+'</div>'+(l.photoCount>1?'<span class="g-badge">'+l.photoCount+' 張，左右滑</span>':'')+'</div>';
   renderDetailBody();
@@ -1219,6 +1265,23 @@ document.addEventListener("click",e=>{
 });
 document.addEventListener("click",e=>{const b=e.target.closest("[data-fav]");if(b){e.preventDefault();toggleFav(b.getAttribute("data-fav"));}});
 $("#dFav").addEventListener("click",()=>{if(S.openId)toggleFav(S.openId);});
+$("#dShare").addEventListener("click",()=>{const l=getL(S.openId);if(l)shareListing(l);});
+// 分享：手機用系統分享（可選 LINE），電腦複製文字和連結
+async function shareListing(l){
+  const url=location.origin+"/#l="+l.id;
+  const tmp=document.createElement("div");tmp.innerHTML=priceHTML(l);
+  const text=[(l.kind==="want"?"求料":"出料")+"：" + l.title,fmtN(l.qty)+" "+(l.unit||""),tmp.textContent,[l.county,l.area].filter(Boolean).join(" ")].filter(Boolean).join("｜");
+  if(navigator.share){try{await navigator.share({title:l.title+"｜接好料",text,url});}catch(e){}return;}
+  try{await navigator.clipboard.writeText(text+"\n"+url);toast("已複製連結，可以貼到 LINE");}
+  catch(e){window.open("https://line.me/R/share?text="+encodeURIComponent(text+"\n"+url),"_blank","noopener");}
+}
+// 網址路由：#l=編號 打開那筆材料；#post 打開刊登（主畫面捷徑用）
+function routeHash(){
+  const h=location.hash;const m=h.match(/^#l=([A-Za-z0-9_-]{1,64})$/);
+  if(m){const id=m[1];if(S.openId===id)return;if(getL(id))openDetail(id);else{S.wantOpen=id;fetchMissing([id]);}}
+  else if(h==="#post"){S.wantPost=true;history.replaceState(null,"",location.pathname+location.search);if(S.ready){S.wantPost=false;openPost(null);}}
+}
+window.addEventListener("hashchange",routeHash);
 
 /* ---------- events ---------- */
 $("#kindOffer").onclick=()=>{S.kind="offer";render();};
@@ -1246,6 +1309,9 @@ document.querySelector('[data-tview="browse"]').setAttribute("aria-current","pag
 $("#navPost").onclick=()=>openPost(null);
 
 /* ---------- boot ---------- */
+window.addEventListener("online",()=>render());window.addEventListener("offline",()=>render());
+// 離線支援：有網路一律拿最新版，沒網路才用上次存的
+if("serviceWorker" in navigator&&(location.protocol==="https:"||location.hostname==="localhost"))navigator.serviceWorker.register("/sw.js").catch(()=>{});
 const saved=lsGet("jieliao.me");if(saved&&typeof saved==="object")Object.assign(S.me,saved);
 function guestFavs(){const v=lsGet("jieliao.favs");return Array.isArray(v)?v.filter(x=>typeof x==="string").slice(0,300):[];}
 S.favs=guestFavs();
@@ -1292,6 +1358,7 @@ function waitBackend(){
     render();return;
   }
   S.B=B;S.db=B.db;
+  routeHash();
   const timer=setTimeout(()=>{S.stale=true;S.loading=false;render();},10000);
   S.db.collection("listings").orderBy("createdAt","desc").limit(PAGE).onSnapshot(snap=>{
     S.page1=snap.docs.map(d=>Object.assign({id:d.id},d.data()));if(!S.pages.length)S.lastPageFull=snap.docs.length===PAGE;
@@ -1344,6 +1411,7 @@ function waitBackend(){
     }
     if(S.view==="me")renderMe(true);
     render();
+    if(S.wantPost&&gen===authGen){S.wantPost=false;setTimeout(()=>openPost(null),50);}
   });
 })();
 })();

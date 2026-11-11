@@ -14,7 +14,10 @@ A marketplace for leftover construction materials in Taiwan. Sites with surplus 
 | File | What it is |
 | --- | --- |
 | `index.html` | The whole app: HTML, CSS and vanilla JS in one file. No build step and no framework. |
-| `backend.js` | ES module that loads the Firebase SDK (pinned to `10.12.2` from gstatic) and exposes `window.RematBackend`: a Firestore-like `db` (`doc()`, `collection()`, `where/orderBy/limit`, `get/set/update/delete/add`, `onSnapshot`) plus auth helpers. `update()` flattens nested objects into dotted paths so map fields merge instead of being replaced. |
+| `backend.js` | ES module that loads the Firebase SDK (pinned to `10.12.2` from gstatic) and exposes `window.RematBackend`: a Firestore-like `db` (`doc()`, `collection()`, `where/orderBy/limit/startAfter`, `get/set(d, {merge})/update/delete/add`, `onSnapshot`), `arrayUnion`/`arrayRemove`, plus auth helpers. `update()` flattens nested objects into dotted paths so map fields merge instead of being replaced. Firestore uses a persistent local cache (IndexedDB). |
+| `sw.js` | Service worker. Network-first for the site's own files (online users always get the latest version), cache only as an offline fallback. Firebase SDK files from gstatic are cache-first because their URLs are versioned. Bump `CACHE` only if the cached shell list changes. |
+| `og.png` | 1200×630 share preview for LINE/Facebook. Generated from HTML with Playwright using the header logo; `ReMat` aligned to `接好料` the same way as the header. |
+| `robots.txt`, `sitemap.xml` | Search engine basics. |
 | `config.js` | Firebase web config for project `remat-8e08c`. The key is public by design, so **keep it**. Security comes from `firestore.rules`. |
 | `firestore.rules` | Firestore security rules. **Changing this file does nothing by itself.** Danny must paste it into Firebase console → Firestore Database → Rules → Publish. Always remind him. |
 | `manifest.json`, `icon-*.png`, `apple-touch-icon.png`, `favicon.svg` | PWA / home-screen icons. |
@@ -26,7 +29,7 @@ A marketplace for leftover construction materials in Taiwan. Sites with surplus 
 - **Firebase project `remat-8e08c`, Spark (free) plan:**
   - Auth: Email/Password and Google. Authorized domains are `remat.tw` and `www.remat.tw`.
   - Firestore: Standard edition, `(default)` database, location `asia-east1`.
-  - Free quota is about 50k reads and 20k writes per day. Keep queries bounded (listings use `limit(200)`).
+  - Free quota is about 50k reads and 20k writes per day. Keep queries bounded: the feed loads 60 listings live (`PAGE`) and older ones via 載入更多 (`startAfter(createdAt)`); 我的 uses its own `where(ownerId)` query (limit 100); favorites and `#l=` links fetch single docs by id into `S.extra`. Always look listings up with `getL(id)`, not `S.listings.find`.
   - No Cloud Functions and no Storage. Both would need the Blaze plan, so ask Danny before adding anything that does.
 
 ## Data model (Firestore)
@@ -41,12 +44,16 @@ A marketplace for leftover construction materials in Taiwan. Sites with surplus 
   - `ownerId`, `status`: `open`|`hold`|`done`
   - `createdAt`, `updatedAt` (ms)
 - `photos/{listingId}-{i}`: `{img, listingId, ownerId}`. Full-size photos are compressed JPEG data URLs under about 200 KB, at most 4 per listing.
-- `users/{uid}`: the private contact profile (`name, phone, line, county, area`) plus `favs` (array of listing ids, newest first, max 300). It is written with `set()`, which replaces the whole doc, so always write it via `userDoc()`. Logged-out favorites live in localStorage `jieliao.favs` and merge into the account on login.
+- `users/{uid}`: the private contact profile (`name, phone, line, county, area`) plus `favs` (array of listing ids, stored oldest→newest, max 300; the app shows them newest first). Profile saves use `set(..., {merge:true})`; favorites change one id at a time with `arrayUnion`/`arrayRemove`, so writes never overwrite each other. Logged-out favorites live in localStorage `jieliao.favs` (guest only); on login they are merged into the account and the local list is cleared. On logout, name/phone/line are cleared locally (location is kept).
 - `admins/{uid}`: if this doc exists, the user is an admin. Admins are added by hand in the console only.
 - `chats/{listingId}~{buyerUid}`: `{listingId, title, cat, sellerId, buyerId, members:[sellerId,buyerId], sellerName, buyerName, lastText, lastAt, lastFrom, readAt:{uid:ms}}`
 - `chats/{tid}/msgs/{id}`: `{from, text (≤500), at}`
 
-If you change any field, update `firestore.rules` to match (`okListing()` validates listings) and tell Danny to republish the rules.
+If you change any field, update `firestore.rules` to match and tell Danny to republish the rules. The rules whitelist every field (`keys().hasOnly`), cap string sizes, require `createdAt` within ±10 min of server time on create and unchanged on update, only allow photos under a listing you own (so the app writes the listing **before** its photos), and only let each chat member change their own `readAt`/last message. Messages and `lastAt` must be within ±10 min of server time.
+
+**Testing rules:** install `firebase-tools`, `@firebase/rules-unit-testing` and `firebase@10.12.2` in a scratch folder (`npm i --legacy-peer-deps`), run the Firestore + Auth emulators, and test both the rules directly and the real site against them (route the gstatic SDK URLs to a local esbuild bundle of `firebase/app|firestore|auth`, and patch `backend.js` with `connectFirestoreEmulator`/`connectAuthEmulator`). Block service workers in test contexts unless testing offline.
+
+**Deploy order when rules and site both change:** push the site first, wait ~10 min for GitHub Pages caches, then publish the rules, so old cached pages aren't blocked by the new rules.
 
 ## Product rules
 - **Never allow or show examples of 剩餘土石方 (soil) or 營建廢棄物 (construction waste).** Both must be handled by licensed operators under Taiwanese law. The 關於 page says so.
@@ -62,14 +69,18 @@ If you change any field, update `firestore.rules` to match (`okListing()` valida
   - `--card` `#FFFFFF`
   - `--line` `#D9D7CE`
   - Status colors: go `#1E7F47`, hold `#2C64C4`, warn `#D4470E`
-- **Fonts:** Noto Sans TC for UI and names; Barlow Condensed for numbers and "ReMat".
+- **Fonts:** body text uses the device's built-in Chinese font (PingFang TC on Apple, Microsoft JhengHei on Windows, Noto Sans CJK on Android) so nothing heavy downloads. Only the header logo loads Noto Sans TC, as a `text=` subset of its 12 characters (weights 400/900); that subset sits higher than the full font, so `.logo-mark` is nudged down 3px and `.logo-sub` 2px (measured against the full font). If you change the logo text, update the `text=` list and re-measure. Barlow Condensed for numbers and "ReMat".
 - **Logo (B6 "材料堆疊"):** two yellow loop arrows around a pile of three white blocks, on a dark rounded square. The inline SVG is in the header. Keep the blocks optically centered at `y=37.5` and `y=49.5`.
 - **Header:** yellow. Icon 44px with the text block exactly 44px tall (`接好料` + `ReMat` on one line, then `工地剩料，就近接手` justified to the same width). `ReMat` is sized (29.5px) so its capitals are exactly as tall as `接好料`, with tops and bottoms aligned.
 - **Layout breakpoints:**
   - **Phone (<768px):** one column. Bottom nav in this order: **找料 · 訊息 · 刊登 (raised yellow, center) · 關於 · 我的**.
   - **≥768px (iPad):** nav moves into the header (`.topnav`), listings become a card grid, and sheets become centered modals.
   - **≥1100px (desktop):** left filter sidebar, 3-column grid, two-column listing detail.
-- **Spacing:** 16px side gutter everywhere on mobile, so left edges line up from the header down to the bottom nav.
+- **Spacing:** 16px side gutter everywhere on mobile, so left edges line up from the header down to the bottom nav. On ≥768px, 我的/訊息/關於 align with the header's left edge and forms are capped at 720px.
+- **Tap targets:** at least 40px (chips, filters, small buttons) and 44px for icon buttons; the card heart is 36px with a 44px hit area. People use this outdoors, sometimes with gloves.
+- **Text colors:** `--muted` `#5E6166`, `--warn-text` `#B33A08` for orange-red text (keep `--warn` for fills). Keep text contrast ≥ 4.5:1.
+- **URLs:** `#l=<listingId>` opens a listing (set while the detail sheet is open, used by the 分享 button); `#post` opens the post form (home-screen shortcut).
+- **Sheets:** `openSheet`/`closeSheet` move focus into the sheet, make everything behind it `inert`, and restore focus on close. Use them for any new sheet.
 
 ## Working on the code
 - Keep it dependency-free: no bundler, no npm packages in the shipped site.
