@@ -1,7 +1,7 @@
 rules_version = '2';
 
 // 接好料 ReMat 的資料庫規則
-// 誰可以看、誰可以改，全部由這份規則決定。整份貼到 Firebase → Firestore → 規則。
+// 誰可以看、誰可以改，全部由這份規則決定。整份貼到 Firebase → Firestore → 規則 → 發布。
 service cloud.firestore {
   match /databases/{database}/documents {
 
@@ -10,39 +10,75 @@ service cloud.firestore {
     function isAdmin() {
       return signedIn() && exists(/databases/$(database)/documents/admins/$(me()));
     }
+    // 現在時間（毫秒），用來擋「時間造假」
+    function nowMs() { return request.time.toMillis(); }
+    function nearNow(t) { return t is int && math.abs(t - nowMs()) < 600000; } // ±10 分鐘
+    // 選填文字欄位：沒有這個欄位，或是不超過 n 個字的文字
+    function optStr(d, k, n) { return !(k in d) || (d[k] is string && d[k].size() <= n); }
+
     function okListing(d) {
-      return d.kind in ['offer', 'want']
+      return d.keys().hasOnly(['kind','cat','title','qty','unit','spec','desc','priceMode','price',
+                               'county','area','deadline','pickup','contactName','phone','line',
+                               'photoCount','thumb','ownerId','status','createdAt','updatedAt','sample'])
+        && d.kind in ['offer', 'want']
         && d.status in ['open', 'hold', 'done']
+        && d.cat in ['tile','wood','steel','cement','paint','bath','door','mep','tool','other']
         && d.title is string && d.title.size() > 0 && d.title.size() <= 60
-        && d.qty is number && d.qty > 0
+        && d.qty is number && d.qty > 0 && d.qty < 10000000
         && d.desc is string && d.desc.size() <= 800
-        && d.thumb is string && d.thumb.size() <= 60000
-        && d.ownerId is string;
+        && d.thumb is string && d.thumb.size() <= 40000
+        && d.ownerId is string
+        && d.createdAt is int && d.updatedAt is int
+        && (!('priceMode' in d) || d.priceMode in ['free', 'lot', 'unit', 'ask'])
+        && (!('price' in d) || (d.price is number && d.price >= 0 && d.price < 100000000))
+        && (!('photoCount' in d) || (d.photoCount is int && d.photoCount >= 0 && d.photoCount <= 4))
+        && (!('pickup' in d) || (d.pickup is list && d.pickup.size() <= 5))
+        && (!('sample' in d) || d.sample == false || isAdmin())
+        && optStr(d, 'unit', 10) && optStr(d, 'spec', 80) && optStr(d, 'county', 10)
+        && optStr(d, 'area', 30) && optStr(d, 'deadline', 10) && optStr(d, 'contactName', 30)
+        && optStr(d, 'phone', 20) && optStr(d, 'line', 30);
+    }
+    function keepsCreatedAt() {
+      return !('createdAt' in resource.data) || request.resource.data.createdAt == resource.data.createdAt;
     }
 
     // 刊登：所有人都能看；登入的人可以刊登；只有刊登者（或管理員）能改、能刪
     match /listings/{id} {
       allow read: if true;
-      allow create: if signedIn() && request.resource.data.ownerId == me() && okListing(request.resource.data);
-      allow update: if (signedIn() && resource.data.ownerId == me()
-                        && request.resource.data.ownerId == me() && okListing(request.resource.data))
-                    || (isAdmin() && okListing(request.resource.data));
+      allow create: if signedIn() && request.resource.data.ownerId == me()
+                    && okListing(request.resource.data)
+                    && nearNow(request.resource.data.createdAt);
+      allow update: if signedIn() && okListing(request.resource.data) && keepsCreatedAt()
+                    && request.resource.data.ownerId == resource.data.ownerId
+                    && (resource.data.ownerId == me() || isAdmin());
       allow delete: if (signedIn() && resource.data.ownerId == me()) || isAdmin();
     }
 
-    // 照片
+    // 照片：只能放在自己刊登的那筆底下（要先存刊登，再存照片）
+    function okPhoto(id, d) {
+      return d.keys().hasOnly(['img', 'listingId', 'ownerId'])
+        && d.img is string && d.img.size() < 300000
+        && d.listingId is string && d.ownerId == me()
+        && id in [d.listingId + '-0', d.listingId + '-1', d.listingId + '-2', d.listingId + '-3']
+        && (get(/databases/$(database)/documents/listings/$(d.listingId)).data.ownerId == me() || isAdmin());
+    }
     match /photos/{id} {
       allow read: if true;
-      allow create: if signedIn() && request.resource.data.ownerId == me()
-                    && request.resource.data.img is string && request.resource.data.img.size() < 900000;
-      allow update: if ((signedIn() && resource.data.ownerId == me()) || isAdmin())
-                    && request.resource.data.img is string && request.resource.data.img.size() < 900000;
+      allow create, update: if signedIn() && okPhoto(id, request.resource.data);
       allow delete: if (signedIn() && resource.data.ownerId == me()) || isAdmin();
     }
 
-    // 個人聯絡資料：只有自己看得到
+    // 個人資料和收藏：只有自己看得到、改得到
     match /users/{uid} {
-      allow read, write: if signedIn() && me() == uid;
+      allow read: if signedIn() && me() == uid;
+      allow delete: if signedIn() && me() == uid;
+      allow create, update: if signedIn() && me() == uid
+        && request.resource.data.keys().hasOnly(['name', 'phone', 'line', 'county', 'area', 'favs'])
+        && optStr(request.resource.data, 'name', 60) && optStr(request.resource.data, 'phone', 20)
+        && optStr(request.resource.data, 'line', 30) && optStr(request.resource.data, 'county', 10)
+        && optStr(request.resource.data, 'area', 30)
+        && (!('favs' in request.resource.data)
+            || (request.resource.data.favs is list && request.resource.data.favs.size() <= 300));
     }
 
     // 管理員名單：只能在 Firebase 主控台手動新增
@@ -51,28 +87,49 @@ service cloud.firestore {
       allow write: if false;
     }
 
-    // 聊天：只有買家和賣家兩個人看得到
+    // 聊天：只有買家和賣家兩個人看得到；每個人只能改「自己」的部分
     match /chats/{tid} {
       allow read: if signedIn() && me() in resource.data.members;
       allow create: if signedIn()
+        && request.resource.data.keys().hasOnly(['listingId','title','cat','sellerId','buyerId','members',
+                                                 'sellerName','buyerName','createdAt','lastText','lastAt','lastFrom','readAt'])
         && request.resource.data.buyerId == me()
         && request.resource.data.sellerId != me()
         && request.resource.data.members == [request.resource.data.sellerId, me()]
         && tid == request.resource.data.listingId + '~' + me()
+        && optStr(request.resource.data, 'title', 60) && optStr(request.resource.data, 'cat', 10)
+        && optStr(request.resource.data, 'sellerName', 60) && optStr(request.resource.data, 'buyerName', 60)
+        && request.resource.data.lastText is string && request.resource.data.lastText.size() <= 500
+        && request.resource.data.lastFrom == me()
+        && nearNow(request.resource.data.lastAt)
+        && request.resource.data.readAt is map && request.resource.data.readAt.keys().hasOnly([me()])
         && get(/databases/$(database)/documents/listings/$(request.resource.data.listingId)).data.ownerId == request.resource.data.sellerId;
       allow update: if signedIn() && me() in resource.data.members
-        && request.resource.data.members == resource.data.members
-        && request.resource.data.sellerId == resource.data.sellerId
-        && request.resource.data.buyerId == resource.data.buyerId
-        && request.resource.data.listingId == resource.data.listingId;
+        && request.resource.data.diff(resource.data).affectedKeys()
+             .hasOnly(['lastText', 'lastAt', 'lastFrom', 'readAt', 'buyerName'])
+        // 改最後一句話：只能是自己說的、時間是現在
+        && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['lastText', 'lastAt', 'lastFrom'])
+            || (request.resource.data.lastFrom == me()
+                && request.resource.data.lastText is string && request.resource.data.lastText.size() <= 500
+                && nearNow(request.resource.data.lastAt)))
+        // 買家名字只有買家自己能改
+        && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['buyerName'])
+            || (me() == resource.data.buyerId
+                && request.resource.data.buyerName is string && request.resource.data.buyerName.size() <= 60))
+        // 已讀時間只能改自己的
+        && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['readAt'])
+            || (request.resource.data.readAt is map
+                && request.resource.data.readAt.diff(resource.data.readAt).affectedKeys().hasOnly([me()])));
 
       match /msgs/{mid} {
         allow read: if signedIn()
           && me() in get(/databases/$(database)/documents/chats/$(tid)).data.members;
         allow create: if signedIn()
+          && request.resource.data.keys().hasOnly(['from', 'text', 'at'])
           && request.resource.data.from == me()
           && request.resource.data.text is string
           && request.resource.data.text.size() > 0 && request.resource.data.text.size() <= 500
+          && nearNow(request.resource.data.at)
           && me() in get(/databases/$(database)/documents/chats/$(tid)).data.members;
       }
     }

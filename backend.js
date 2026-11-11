@@ -1,8 +1,9 @@
 // 接好料 ReMat：連接 Firebase（資料庫 + 登入）。一般不需要修改這個檔案。
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
-  getFirestore, doc, collection, getDoc, getDocs, setDoc, updateDoc, deleteDoc, addDoc,
-  onSnapshot, query, where, orderBy, limit
+  getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager,
+  doc, collection, getDoc, getDocs, setDoc, updateDoc, deleteDoc, addDoc,
+  onSnapshot, query, where, orderBy, limit, startAfter, arrayUnion, arrayRemove
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import {
   getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup,
@@ -28,7 +29,14 @@ if (!cfg || !cfg.apiKey || /請貼上/.test(cfg.apiKey) || !cfg.projectId) {
 
 function start(cfg) {
   const app = initializeApp(cfg);
-  const fs = getFirestore(app);
+  // 把讀過的資料存在裝置上：重新整理時不用全部重新下載，也比較省免費額度
+  let fs;
+  try {
+    fs = initializeFirestore(app, { localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }) });
+  } catch (e) {
+    console.warn("persistent cache off", e);
+    fs = getFirestore(app);
+  }
   const auth = getAuth(app);
   auth.languageCode = "zh-TW";
 
@@ -67,7 +75,8 @@ function start(cfg) {
       id: ref.id,
       path: ref.path,
       get: () => guard(async () => wrapDoc(await getDoc(ref))),
-      set: (d) => guard(() => setDoc(ref, d)),
+      // set(d, {merge:true}) 只改有寫到的欄位
+      set: (d, opts) => guard(() => (opts ? setDoc(ref, d, opts) : setDoc(ref, d))),
       update: (d) => guard(() => updateDoc(ref, flatten(d))),
       delete: () => guard(() => deleteDoc(ref)),
       onSnapshot: (next, err) => onSnapshot(ref, (s) => next(wrapDoc(s)), (e) => { console.error(e); err && err(mapErr(e)); }),
@@ -79,6 +88,7 @@ function start(cfg) {
       where: (f, op, v) => Q(query(q, where(f, op, v))),
       orderBy: (f, dir) => Q(query(q, orderBy(f, dir || "asc"))),
       limit: (n) => Q(query(q, limit(n))),
+      startAfter: (v) => Q(query(q, startAfter(v))),
       get: () => guard(async () => wrapQuery(await getDocs(q))),
       onSnapshot: (next, err) => onSnapshot(q, (s) => next(wrapQuery(s)), (e) => { console.error(e); err && err(mapErr(e)); })
     };
@@ -115,6 +125,9 @@ function start(cfg) {
 
   ready({
     db,
+    // 陣列加減一項（收藏用），不會蓋掉別台裝置的資料
+    arrayUnion: (...v) => arrayUnion(...v),
+    arrayRemove: (...v) => arrayRemove(...v),
     onAuth: (cb) => onAuthStateChanged(auth, (u) => cb(u ? { uid: u.uid, email: u.email || "", name: u.displayName || "" } : null)),
     isAdmin: async (uid) => { try { return (await getDoc(doc(fs, "admins", uid))).exists(); } catch (e) { return false; } },
     google: () => authGuard(() => signInWithPopup(auth, new GoogleAuthProvider())),
