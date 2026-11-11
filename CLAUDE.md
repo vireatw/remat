@@ -69,9 +69,9 @@ If you change any field, update `firestore.rules` to match and tell Danny to rep
   - `--card` `#FFFFFF`
   - `--line` `#D9D7CE`
   - Status colors: go `#1E7F47`, hold `#2C64C4`, warn `#D4470E`
-- **Fonts:** body text uses the device's built-in Chinese font (PingFang TC on Apple, Microsoft JhengHei on Windows, Noto Sans CJK on Android) so nothing heavy downloads. Only the header logo loads Noto Sans TC, as a `text=` subset of its 12 characters (weights 400/900); that subset sits higher than the full font, so `.logo-mark` is nudged down 3px and `.logo-sub` 2px (measured against the full font). If you change the logo text, update the `text=` list and re-measure. Barlow Condensed for numbers and "ReMat".
+- **Fonts:** body text uses the device's built-in Chinese font (PingFang TC on Apple, Microsoft JhengHei on Windows, Noto Sans CJK on Android) so nothing heavy downloads. Barlow Condensed (Google Fonts) for numbers. The header wordmark is **not text**: it is an inline SVG (`.logo-type`) of outlined glyphs (Noto Sans TC 900 for 接好料, Barlow Condensed 800 for ReMat, Noto Sans TC 400 for the subtitle), because browsers place font glyphs at different heights (iPhone Safari drew 接好料 about 2pt lower than Chrome). To change it, regenerate the paths with fontTools from the Google Fonts `text=` subsets and re-measure.
 - **Logo (B6 "材料堆疊"):** two yellow loop arrows around a pile of three white blocks, on a dark rounded square. The inline SVG is in the header. Keep the blocks optically centered at `y=37.5` and `y=49.5`.
-- **Header:** yellow. Icon 44px with the text block exactly 44px tall (`接好料` + `ReMat` on one line, then `工地剩料，就近接手` justified to the same width). `ReMat` is sized (29.5px) so its capitals are exactly as tall as `接好料`, with tops and bottoms aligned.
+- **Header:** yellow. Icon 44px with the SVG wordmark exactly 44px tall: `接好料` (22px) + 8px gap + `ReMat` scaled so its capitals are exactly as tall as `接好料` ink (tops at y≈3.3, bottoms at y≈24.3), then `工地剩料，就近接手` (13.5px) evenly spread so its ink spans the same left and right edges (y≈31–43.3).
 - **Layout breakpoints:**
   - **Phone (<768px):** one column. Bottom nav in this order: **找料 · 訊息 · 刊登 (raised yellow, center) · 關於 · 我的**.
   - **≥768px (iPad):** nav moves into the header (`.topnav`), listings become a card grid, and sheets become centered modals.
